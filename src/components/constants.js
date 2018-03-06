@@ -34,6 +34,7 @@ export default {
   sliderTicksColorActive: '#337AB7',
   dividerColor: 'rgb(52, 50, 50)',
   fontFamily: `
+      "FF DIN", sans-serif,
       -apple-system, BlinkMacSystemFont,
       "Segoe UI",
       Roboto, "Droid Sans",
