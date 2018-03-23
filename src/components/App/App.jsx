@@ -22,6 +22,7 @@ import Teams from 'components/Teams';
 import Records from 'components/Records';
 // import Predictions from 'components/Predictions';
 import Meta from 'components/Meta';
+import Scenarios from 'components/Scenarios';
 import styled from 'styled-components';
 import Header from '../Header';
 import Footer from '../Footer';
@@ -103,6 +104,7 @@ class App extends React.Component {
             <Route exact path="/search" component={Search} />
             <Route exact path="/records/:info?" component={Records} />
             <Route exact path="/meta" component={Meta} />
+            <Route exact path="/scenarios" component={Scenarios} />
           </StyledBodyDiv>
           <Footer location={location} width={width} />
         </StyledDiv>
