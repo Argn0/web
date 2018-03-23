@@ -11,7 +11,7 @@ import {transformations, formatSeconds, getOrdinal} from 'utility';
 import Container from 'components/Container';
 import TabBar from 'components/TabBar';
 import FormField from 'components/Form/FormField';
-import {getScenariosItemTimings} from '../../actions/index';
+import {getScenariosItemTimings, getScenariosLaneRoles} from '../../actions/index';
 import fetch from 'isomorphic-fetch';
 import {withRouter} from 'react-router-dom';
 import querystring from 'querystring';
@@ -24,41 +24,53 @@ import heroes from 'dotaconstants/build/heroes.json';
 import items from 'dotaconstants/build/items.json';
 import MenuItem from 'material-ui/MenuItem';
 import {DropDownMenu} from 'material-ui/DropDownMenu';
-import { itemList, heroList } from './FormFieldData';
+import {itemList, heroList} from './FormFieldData';
+import ScenariosFormField from './ScenariosFormField';
 
-const autocomplete = {}
-
-function getAutoComplete(self, fields) {
-  return (
-  <div>
-  { fields.map(function(field) {
-    console.log(field)
-return (
-    <AutoComplete 
-    key={field}
-    openOnFocus
-    dataSource={[1, 2, 3]}
-    ref={(ref) => { autocomplete[field] = ref; return null;}}
-    filter={AutoComplete.fuzzyFilter}
-    onNewRequest={chosenRequest => {
-      self.setState({field: chosenRequest.value})
-    }}
-    onClick={() => self.resetField(field, () => self.setState({field: null}))}
-    />
-  )
-  })
-  }
-  </div>
-  )
+const ScenariosTable = ({}) => {
+  <Table />
 }
 
-function getFormField() {
+const autocomplete = {}
+const dataSources= {
+  hero_id : heroList,
+  item: itemList
+}
+
+function getFormField(fields) {
+  const self = this
+  
+  function getAutoComplete(fields) {
+    console.log(fields)
+    return (
+      <div>
+        {fields
+          .map(function (field) {
+            console.log(self)
+            return (<AutoComplete
+              key={field}
+              openOnFocus
+              dataSource={dataSources[field]}
+              ref={(ref) => {
+              autocomplete[field] = ref;
+              return null;
+            }}
+              filter={AutoComplete.fuzzyFilter}
+              onNewRequest={chosenRequest => {
+              self.setState({[field]: chosenRequest.value})
+            }}
+              onClick={() => self.resetField(field, () => self.setState({[field]: null}))}/>)
+          })
+}
+      </div>
+    )
+  }
   const formFields = {
     itemTimings() {
-      return getAutoComplete(this, ['hero_id', 'items']) 
+      return getAutoComplete(['hero_id', 'item'])
     }
   }
-  return formFields[this.state.dropValue].call(this)
+  return formFields[this.state.dropValue]()
 }
 
 const itemTimingColumns = [
@@ -106,13 +118,15 @@ class Scenarios extends React.Component {
     }))
   }
 
+  
+
   render() {
     return (
       <div>
         <DropDownMenu value={this.state.dropValue} onChange={this.handleChange}>
           <MenuItem value={'itemTimings'} primaryText="Item Timings"/>
         </DropDownMenu>
-        {getFormField.call(this)}
+        <ScenariosFormField fields={['hero_id', 'item']} resetField={this.resetField.bind(this)} setState={this.setState.bind(this)}/>
         <FlatButton
           variant="raised"
           color="primary"
@@ -121,9 +135,9 @@ class Scenarios extends React.Component {
         </FlatButton>
         {console.log(this.props.itemTimings)}
         <Table
-          data={this.props.itemTimings.data}
+          data={this.props[this.state.dropValue].data}
           columns={itemTimingColumns}
-          loading={this.props.itemTimings.loading}/>
+          loading={this.props[this.state.dropValue].loading}/>
 
       </div>
     );
@@ -136,16 +150,29 @@ Scenarios.propTypes = {
   })
 };
 
-const mapStateToProps = state => ({
-  itemTimings: {
-    data: state.app.scenariosItemTimings.data,
-    loading: state.app.scenariosItemTimings.loading,
-    error: state.app.scenariosItemTimings.error
-  }
-});
+const mapStateToProps = state => {
+  const {
+    scenariosItemTimings,
+    scenariosLaneRoles
+  } = state.app
+
+  return {
+    itemTimings: {
+      data: scenariosItemTimings.data,
+      loading: scenariosItemTimings.loading,
+      error: scenariosItemTimings.error
+    },
+    laneRoles: {
+      data: scenariosLaneRoles.data,
+      loading: scenariosLaneRoles.loading,
+      error: scenariosLaneRoles.error
+    }
+  };
+}
 
 const mapDispatchToProps = dispatch => ({
-  getItemTimings: (params) => dispatch(getScenariosItemTimings(params))
+  getItemTimings: (params) => dispatch(getScenariosItemTimings(params)),
+  getLaneRoles: (params) => dispatch(getScenariosLaneRoles(params))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Scenarios);

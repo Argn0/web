@@ -64,3 +64,4 @@ export const getPlayerRankings = (accountId, params) => action('playerRankings',
 export * from './requestActions';
 export * from './formActions';
 export const getScenariosItemTimings = (params) => action('scenariosItemTimings', process.env.REACT_APP_API_HOST, `api/scenarios/itemTimings`, params);
+export const getScenariosLaneRoles = (params) => action('scenariosLaneRoles', process.env.REACT_APP_API_HOST, `api/scenarios/laneRoles`, params);

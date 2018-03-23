@@ -50,4 +50,5 @@ export default combineReducers({
   form,
   request,
   scenariosItemTimings: reducer('scenariosItemTimings'),
+  scenariosLaneRoles: reducer('scenariosLaneRoles'),
 });
