@@ -5,7 +5,8 @@ import {itemList, heroList} from './FormFieldData';
 const autocomplete = {}
 const dataSources= {
   hero_id : heroList,
-  item: itemList
+  item: itemList,
+  lane_role: [{text: '1', value: 1}, {text: '2', value: 2}, {text:'3', value: 3}]
 }
 
 function resetField(field, resetState) {
@@ -15,8 +16,8 @@ function resetField(field, resetState) {
 
 
 
-const ScenarioFormField = ({fields, setState}) => {
-
+const ScenarioFormField = ({fields, updateFormFields , updateQueryParams}) => {
+  console.log(itemList)
     return (
         <div>
           {fields
@@ -31,9 +32,12 @@ const ScenarioFormField = ({fields, setState}) => {
               }}
                 filter={AutoComplete.fuzzyFilter}
                 onNewRequest={chosenRequest => {
-                setState({[field]: chosenRequest.value})
+                  updateFormFields({[field]: chosenRequest.value}
+                  )
               }}
-                onClick={() => resetField(field, () => setState({[field]: null}))}/>)
+                onClick={() =>  resetField(field, () =>  updateFormFields({[field]: null}))   }  
+                onClose={updateQueryParams}
+                />)
             })
   }
         </div>

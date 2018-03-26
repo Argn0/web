@@ -104,7 +104,7 @@ class App extends React.Component {
             <Route exact path="/search" component={Search} />
             <Route exact path="/records/:info?" component={Records} />
             <Route exact path="/meta" component={Meta} />
-            <Route exact path="/scenarios" component={Scenarios} />
+            <Route exact path="/scenarios/:info?" component={Scenarios} />
           </StyledBodyDiv>
           <Footer location={location} width={width} />
         </StyledDiv>

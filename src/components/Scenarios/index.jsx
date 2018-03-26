@@ -26,54 +26,19 @@ import MenuItem from 'material-ui/MenuItem';
 import {DropDownMenu} from 'material-ui/DropDownMenu';
 import {itemList, heroList} from './FormFieldData';
 import ScenariosFormField from './ScenariosFormField';
+import { Link } from 'react-router-dom';
 
 const ScenariosTable = ({}) => {
   <Table />
 }
 
-const autocomplete = {}
-const dataSources= {
-  hero_id : heroList,
-  item: itemList
+const fields = {
+itemTimings: ['hero_id', 'item'],
+laneRoles: ['hero_id', 'lane_role']
 }
 
-function getFormField(fields) {
-  const self = this
-  
-  function getAutoComplete(fields) {
-    console.log(fields)
-    return (
-      <div>
-        {fields
-          .map(function (field) {
-            console.log(self)
-            return (<AutoComplete
-              key={field}
-              openOnFocus
-              dataSource={dataSources[field]}
-              ref={(ref) => {
-              autocomplete[field] = ref;
-              return null;
-            }}
-              filter={AutoComplete.fuzzyFilter}
-              onNewRequest={chosenRequest => {
-              self.setState({[field]: chosenRequest.value})
-            }}
-              onClick={() => self.resetField(field, () => self.setState({[field]: null}))}/>)
-          })
-}
-      </div>
-    )
-  }
-  const formFields = {
-    itemTimings() {
-      return getAutoComplete(['hero_id', 'item'])
-    }
-  }
-  return formFields[this.state.dropValue]()
-}
-
-const itemTimingColumns = [
+const columns = 
+{itemTimings: [
   {
     displayName: 'hero',
     field: 'hero_id',
@@ -94,21 +59,54 @@ const itemTimingColumns = [
     field: 'wins',
     displayFn: (row, col, field) => field
   }
-]
+],
+laneRoles: [
+  {
+    displayName: 'hero',
+    field: 'hero_id',
+    displayFn: transformations.hero_id
+  }, {
+    displayName: 'lane',
+    field: 'lane_role',
+    displayFn: (row, col, field) => field
+  }, {
+    displayName: 'games',
+    field: 'games',
+    displayFn: (row, col, field) => field
+  }, {
+    displayName: 'wins',
+    field: 'wins',
+    displayFn: (row, col, field) => field
+  }
+],
+}
 
 class Scenarios extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      dropValue: 'itemTimings'
+      dropDownValue: null,
+      formFields : {},
+      queryParams: {}
     };
   }
 
   handleChange = (event, index, dropValue) => this.setState({dropValue});
 
-  resetField(field, resetState) {
-    autocomplete[field].setState({searchText: ''})
-    resetState()
+  updateQueryParams() {
+    const {formFields} = this.state
+    Object.keys(formFields).forEach((key) => (formFields[key] == null) && delete formFields[key]);
+    this.props.history.push(`${this.props.location.pathname}?${querystring.stringify(formFields)}`);
+  }
+
+  updateFormFields = (newFieldState) => {
+    console.log(newFieldState)
+    this.setState({
+      ...this.state,
+      formFields : {...this.state.formFields, ...newFieldState }
+    })
+    console.log(this.state.formFields)
+    this.updateQueryParams()
   }
 
   translateData(data) {
@@ -118,27 +116,36 @@ class Scenarios extends React.Component {
     }))
   }
 
-  
+
+  componentWillMount() {
+    this.setState({ dropDownValue: this.props.match.params.info || 'itemTimings', 
+    formFields: querystring.parse(this.props.location.search.substring(1)) || null});
+  }
 
   render() {
+    console.log(this.props)
+    console.log(this.state)
+    console.log(querystring.parse(this.props.location.search))
+    const dropDownValue  = this.state.dropDownValue
+    const formFields =  this.state.formFields
+    console.log(formFields)
     return (
       <div>
-        <DropDownMenu value={this.state.dropValue} onChange={this.handleChange}>
-          <MenuItem value={'itemTimings'} primaryText="Item Timings"/>
+        <DropDownMenu value={dropDownValue} onChange={this.handleChange}>
+          <MenuItem value={'itemTimings'} primaryText='Item Timings' containerElement={<Link to={'/scenarios/itemTimings?' + querystring.stringify(formFields)}/>}/>     
+          <MenuItem value={'laneRoles'} primaryText="Lane Roles" containerElement={<Link to={'/scenarios/laneRoles?' + querystring.stringify(formFields)}/>}/>
         </DropDownMenu>
-        <ScenariosFormField fields={['hero_id', 'item']} resetField={this.resetField.bind(this)} setState={this.setState.bind(this)}/>
+        <ScenariosFormField fields={fields[dropDownValue]}  updateFormFields={this.updateFormFields.bind(this)} updateQueryParams={this.updateQueryParams.bind(this)}/>
         <FlatButton
           variant="raised"
           color="primary"
-          onClick={() => this.props.getItemTimings(this.state)}>
+          onClick={() => this.props.scenariosDispatch[dropDownValue](this.state.formFields)}>
           Primary
         </FlatButton>
-        {console.log(this.props.itemTimings)}
         <Table
-          data={this.props[this.state.dropValue].data}
-          columns={itemTimingColumns}
-          loading={this.props[this.state.dropValue].loading}/>
-
+          data={this.props.scenariosState[dropDownValue].data}
+          columns={columns[dropDownValue]}
+          loading={this.props.scenariosState[dropDownValue].loading}/>
       </div>
     );
   }
@@ -157,6 +164,7 @@ const mapStateToProps = state => {
   } = state.app
 
   return {
+    scenariosState: {
     itemTimings: {
       data: scenariosItemTimings.data,
       loading: scenariosItemTimings.loading,
@@ -167,12 +175,17 @@ const mapStateToProps = state => {
       loading: scenariosLaneRoles.loading,
       error: scenariosLaneRoles.error
     }
+  }
   };
 }
 
 const mapDispatchToProps = dispatch => ({
-  getItemTimings: (params) => dispatch(getScenariosItemTimings(params)),
-  getLaneRoles: (params) => dispatch(getScenariosLaneRoles(params))
+  scenariosDispatch: {
+    itemTimings: (params) => dispatch(getScenariosItemTimings(params)),
+    laneRoles: (params) => dispatch(getScenariosLaneRoles(params))
+  }
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Scenarios);
+
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Scenarios));
