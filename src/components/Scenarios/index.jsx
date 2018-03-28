@@ -27,59 +27,16 @@ import {DropDownMenu} from 'material-ui/DropDownMenu';
 import {itemList, heroList} from './FormFieldData';
 import ScenariosFormField from './ScenariosFormField';
 import { Link } from 'react-router-dom';
+import { columns } from './ScenariosColumns.jsx'
 
-const ScenariosTable = ({}) => {
-  <Table />
-}
+
 
 const fields = {
 itemTimings: ['hero_id', 'item'],
 laneRoles: ['hero_id', 'lane_role']
 }
 
-const columns = 
-{itemTimings: [
-  {
-    displayName: 'hero',
-    field: 'hero_id',
-    displayFn: transformations.hero_id
-  }, {
-    displayName: 'item',
-    field: 'item',
-    displayFn: (row, col, field) => <img
-        src={`${process.env.REACT_APP_API_HOST}${items[field].img}`}
-        alt=""
-        height='33px'/>
-  }, {
-    displayName: 'games',
-    field: 'games',
-    displayFn: (row, col, field) => field
-  }, {
-    displayName: 'wins',
-    field: 'wins',
-    displayFn: (row, col, field) => field
-  }
-],
-laneRoles: [
-  {
-    displayName: 'hero',
-    field: 'hero_id',
-    displayFn: transformations.hero_id
-  }, {
-    displayName: 'lane',
-    field: 'lane_role',
-    displayFn: (row, col, field) => field
-  }, {
-    displayName: 'games',
-    field: 'games',
-    displayFn: (row, col, field) => field
-  }, {
-    displayName: 'wins',
-    field: 'wins',
-    displayFn: (row, col, field) => field
-  }
-],
-}
+
 
 class Scenarios extends React.Component {
   constructor(props) {
@@ -91,7 +48,7 @@ class Scenarios extends React.Component {
     };
   }
 
-  handleChange = (event, index, dropValue) => this.setState({dropValue});
+  handleChange = (event, index, dropDownValue) => this.setState({dropDownValue});
 
   updateQueryParams() {
     const {formFields} = this.state
@@ -109,13 +66,9 @@ class Scenarios extends React.Component {
     this.updateQueryParams()
   }
 
-  translateData(data) {
-    return data.map(row => ({
-      ...row,
-      item: items[row.item].dname
-    }))
+  getLink(scenario) {
+    return <Link to={`/scenarios/${scenario}?` + querystring.stringify(this.state.formFields)}/> 
   }
-
 
   componentWillMount() {
     this.setState({ dropDownValue: this.props.match.params.info || 'itemTimings', 
@@ -128,14 +81,14 @@ class Scenarios extends React.Component {
     console.log(querystring.parse(this.props.location.search))
     const dropDownValue  = this.state.dropDownValue
     const formFields =  this.state.formFields
-    console.log(formFields)
+    console.log(dropDownValue)
     return (
       <div>
         <DropDownMenu value={dropDownValue} onChange={this.handleChange}>
-          <MenuItem value={'itemTimings'} primaryText='Item Timings' containerElement={<Link to={'/scenarios/itemTimings?' + querystring.stringify(formFields)}/>}/>     
-          <MenuItem value={'laneRoles'} primaryText="Lane Roles" containerElement={<Link to={'/scenarios/laneRoles?' + querystring.stringify(formFields)}/>}/>
+          <MenuItem value={'itemTimings'} primaryText='Item Timings' containerElement={this.getLink('itemTimings')}/>     
+          <MenuItem value={'laneRoles'} primaryText="Lane Roles" containerElement={this.getLink('laneRoles')}/>
         </DropDownMenu>
-        <ScenariosFormField fields={fields[dropDownValue]}  updateFormFields={this.updateFormFields.bind(this)} updateQueryParams={this.updateQueryParams.bind(this)}/>
+        <ScenariosFormField fields={fields[dropDownValue]} formFieldState={this.state.formFields} updateFormFields={this.updateFormFields.bind(this)} updateQueryParams={this.updateQueryParams.bind(this)}/>
         <FlatButton
           variant="raised"
           color="primary"

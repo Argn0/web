@@ -1,5 +1,6 @@
 import heroes from 'dotaconstants/build/heroes.json';
 import items from 'dotaconstants/build/items.json';
+import strings from 'lang';
 
 
 export const heroList = Object.keys(heroes).map(id => ({
@@ -15,3 +16,5 @@ export const itemList = Object.keys(items).map(k => [items[k], k]).filter(x => x
   }
 }).sort((a, b) => a.text.localeCompare(b.text));
 
+
+export const laneRoleList = [1, 2, 3, 4].map(role=> { return {text: strings[`lane_role_${role}`], value: role.toString()}})

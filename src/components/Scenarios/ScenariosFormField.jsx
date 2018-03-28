@@ -1,27 +1,61 @@
 import React from 'react';
 import AutoComplete from 'material-ui/AutoComplete';
-import {itemList, heroList} from './FormFieldData';
+import {itemList, heroList, laneRoleList} from './FormFieldData';
 
 const autocomplete = {}
 const dataSources= {
   hero_id : heroList,
   item: itemList,
-  lane_role: [{text: '1', value: 1}, {text: '2', value: 2}, {text:'3', value: 3}]
+  lane_role: laneRoleList,
 }
 
-function resetField(field, resetState) {
+function resetField(field, updateFormFields) {
     autocomplete[field].setState({searchText: ''})
-    resetState()
+    updateFormFields({[field]: null})
   }
 
+function setDefaultText(field, formFieldState) {
+  if (formFieldState[field]) {
+    return dataSources[field].find(x=>x.value === formFieldState[field]).text
+  }
+  return ''
+}
 
+class ScenarioFormField extends React.Component  {
+  constructor(props) {
+    super(props);
+    this.state = {}
+  }
 
-const ScenarioFormField = ({fields, updateFormFields , updateQueryParams}) => {
-  console.log(itemList)
+  handleUpdateInput(field) {
+    return (searchText) =>
+    this.setState({
+      ...this.state,
+      [field]: {
+      searchText,
+      }
+    });
+  }
+  componentWillMount() {
+    this.props.fields.forEach(function(field) {
+      if (dataSources[field]) {
+        console.log("dasd")
+      this.setState({...this.state, [field]: {searchText: dataSources[field].find(x=>x.value === this.props.formFieldState[field]).text}})
+      }
+    }, this)
+  }
+
+  render() {
+    const {fields, updateFormFields , updateQueryParams, formFieldState} = this.props
+    console.log(this.state)
+    console.log(this)
+    console.log(this.state)
     return (
         <div>
           {fields
             .map(function (field) {
+              console.log(this)
+              console.log(this.state)
               return (<AutoComplete
                 key={field}
                 openOnFocus
@@ -30,19 +64,22 @@ const ScenarioFormField = ({fields, updateFormFields , updateQueryParams}) => {
                 autocomplete[field] = ref;
                 return null;
               }}
+              listStyle={{ maxHeight: 250, overflow: 'auto' }}
                 filter={AutoComplete.fuzzyFilter}
                 onNewRequest={chosenRequest => {
                   updateFormFields({[field]: chosenRequest.value}
                   )
               }}
-                onClick={() =>  resetField(field, () =>  updateFormFields({[field]: null}))   }  
+              onUpdateInput={this.handleUpdateInput(field)}
+              searchText={this.state[field] && this.state[field].searchText || null}
+                onClick={() =>  resetField(field, updateFormFields)   }  
                 onClose={updateQueryParams}
                 />)
-            })
+            }, this)
   }
         </div>
       )
-
+    }
 }
 
 
