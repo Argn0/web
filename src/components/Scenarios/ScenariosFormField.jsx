@@ -7,7 +7,7 @@ const dataSources= {
   hero_id : heroList,
   item: itemList,
   lane_role: laneRoleList,
-  misc: miscList,
+  scenario: miscList,
 }
 
 function resetField(field, updateFormFields) {

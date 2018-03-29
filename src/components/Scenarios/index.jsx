@@ -34,7 +34,7 @@ import { columns } from './ScenariosColumns.jsx'
 const fields = {
 itemTimings: ['hero_id', 'item'],
 laneRoles: ['hero_id', 'lane_role'],
-misc: ['misc']
+misc: ['scenario']
 }
 
 
@@ -49,12 +49,17 @@ class Scenarios extends React.Component {
     };
   }
 
-  handleChange = (event, index, dropDownValue) => this.setState({dropDownValue});
 
   updateQueryParams() {
     const {formFields} = this.state
-    Object.keys(formFields).forEach((key) => (formFields[key] == null) && delete formFields[key]);
+    Object.keys(formFields).forEach((key) => ((formFields[key] == null || fields[this.state.dropDownValue].indexOf(key) === -1)) && delete formFields[key]);
     this.props.history.push(`${this.props.location.pathname}?${querystring.stringify(formFields)}`);
+  }
+
+
+  handleChange = (event, index, dropDownValue) => {
+    this.setState({dropDownValue})
+    this.updateQueryParams()
   }
 
   updateFormFields = (newFieldState) => {
