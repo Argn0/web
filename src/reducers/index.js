@@ -51,4 +51,5 @@ export default combineReducers({
   request,
   scenariosItemTimings: reducer('scenariosItemTimings'),
   scenariosLaneRoles: reducer('scenariosLaneRoles'),
+  scenariosMisc: reducer('scenariosMisc')
 });

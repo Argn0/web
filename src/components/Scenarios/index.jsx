@@ -11,7 +11,7 @@ import {transformations, formatSeconds, getOrdinal} from 'utility';
 import Container from 'components/Container';
 import TabBar from 'components/TabBar';
 import FormField from 'components/Form/FormField';
-import {getScenariosItemTimings, getScenariosLaneRoles} from '../../actions/index';
+import {getScenariosItemTimings, getScenariosLaneRoles, getScenariosMisc} from '../../actions/index';
 import fetch from 'isomorphic-fetch';
 import {withRouter} from 'react-router-dom';
 import querystring from 'querystring';
@@ -33,7 +33,8 @@ import { columns } from './ScenariosColumns.jsx'
 
 const fields = {
 itemTimings: ['hero_id', 'item'],
-laneRoles: ['hero_id', 'lane_role']
+laneRoles: ['hero_id', 'lane_role'],
+misc: ['misc']
 }
 
 
@@ -87,6 +88,7 @@ class Scenarios extends React.Component {
         <DropDownMenu value={dropDownValue} onChange={this.handleChange}>
           <MenuItem value={'itemTimings'} primaryText='Item Timings' containerElement={this.getLink('itemTimings')}/>     
           <MenuItem value={'laneRoles'} primaryText="Lane Roles" containerElement={this.getLink('laneRoles')}/>
+          <MenuItem value={'misc'} primaryText="misc" containerElement={this.getLink('misc')}/>
         </DropDownMenu>
         <ScenariosFormField fields={fields[dropDownValue]} formFieldState={this.state.formFields} updateFormFields={this.updateFormFields.bind(this)} updateQueryParams={this.updateQueryParams.bind(this)}/>
         <FlatButton
@@ -113,7 +115,8 @@ Scenarios.propTypes = {
 const mapStateToProps = state => {
   const {
     scenariosItemTimings,
-    scenariosLaneRoles
+    scenariosLaneRoles,
+    scenariosMisc,
   } = state.app
 
   return {
@@ -127,6 +130,11 @@ const mapStateToProps = state => {
       data: scenariosLaneRoles.data,
       loading: scenariosLaneRoles.loading,
       error: scenariosLaneRoles.error
+    },
+    misc: {
+      data: scenariosMisc.data,
+      loading:scenariosMisc.loading,
+      error: scenariosMisc.error
     }
   }
   };
@@ -135,7 +143,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => ({
   scenariosDispatch: {
     itemTimings: (params) => dispatch(getScenariosItemTimings(params)),
-    laneRoles: (params) => dispatch(getScenariosLaneRoles(params))
+    laneRoles: (params) => dispatch(getScenariosLaneRoles(params)),
+    misc: (params) => dispatch(getScenariosMisc(params)),
   }
 });
 

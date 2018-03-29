@@ -18,3 +18,5 @@ export const itemList = Object.keys(items).map(k => [items[k], k]).filter(x => x
 
 
 export const laneRoleList = [1, 2, 3, 4].map(role=> { return {text: strings[`lane_role_${role}`], value: role.toString()}})
+
+export const miscList = ['pos_chat_1min','neg_chat_1min','courier_kill','first_blood'].map(scenario=> { return {text: scenario, value: scenario}})

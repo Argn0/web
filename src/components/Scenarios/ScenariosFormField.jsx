@@ -1,12 +1,13 @@
 import React from 'react';
 import AutoComplete from 'material-ui/AutoComplete';
-import {itemList, heroList, laneRoleList} from './FormFieldData';
+import {itemList, heroList, laneRoleList, miscList} from './FormFieldData';
 
 const autocomplete = {}
 const dataSources= {
   hero_id : heroList,
   item: itemList,
   lane_role: laneRoleList,
+  misc: miscList,
 }
 
 function resetField(field, updateFormFields) {
@@ -38,7 +39,7 @@ class ScenarioFormField extends React.Component  {
   }
   componentWillMount() {
     this.props.fields.forEach(function(field) {
-      if (dataSources[field]) {
+      if (dataSources[field] && dataSources[field].find(x=>x.value === this.props.formFieldState[field])) {
         console.log("dasd")
       this.setState({...this.state, [field]: {searchText: dataSources[field].find(x=>x.value === this.props.formFieldState[field]).text}})
       }

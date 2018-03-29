@@ -11,7 +11,7 @@ import {transformations, formatSeconds, getOrdinal} from 'utility';
 import Container from 'components/Container';
 import TabBar from 'components/TabBar';
 import FormField from 'components/Form/FormField';
-import {getScenariosItemTimings, getScenariosLaneRoles} from '../../actions/index';
+import {getScenariosItemTimings, getScenariosLaneRoles, getScenariosMisc} from '../../actions/index';
 import fetch from 'isomorphic-fetch';
 import {withRouter} from 'react-router-dom';
 import querystring from 'querystring';
@@ -71,6 +71,32 @@ laneRoles: [
     field: 'lane_role',
     displayFn: (row, col, field) => strings[`lane_role_${field}`]
   }, {
+    displayName: 'games',
+    field: 'games',
+    displayFn: (row, col, field) => field
+  }, {
+    displayName: 'wins',
+    field: 'wins',
+    displayFn: (row, col, field) => field
+  }
+],
+misc: [
+  {
+    displayName: 'scenario',
+    field: 'scenario',
+    displayFn: (row, col, field) => field
+  },  
+  
+  {
+    displayName: 'region',
+    field: 'region',
+    displayFn:  (row, col, field) => field
+  }, {
+    displayName: 'is_radiant',
+    field: 'is_radiant',
+    displayFn: (row, col, field) => field
+  },
+   {
     displayName: 'games',
     field: 'games',
     displayFn: (row, col, field) => field
