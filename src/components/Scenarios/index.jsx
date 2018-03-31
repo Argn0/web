@@ -37,7 +37,19 @@ laneRoles: ['hero_id', 'lane_role'],
 misc: ['scenario']
 }
 
-
+const menuItems = [{
+    text: 'Item Timings',
+    value: 'itemTimings'
+  },
+  {
+    text: 'Lane Roles',
+    value: 'laneRoles'
+  },
+  {
+    text: 'misc',
+    value: 'misc'
+  },
+]
 
 class Scenarios extends React.Component {
   constructor(props) {
@@ -52,27 +64,20 @@ class Scenarios extends React.Component {
 
   updateQueryParams() {
     const {formFields, dropDownValue} = this.state
-    const updatedFields = {}
-    Object.keys(formFields).forEach(function(key) {
-      if(formFields[key] !== null && fields[dropDownValue].includes(key)) {
-        Object.assign(updatedFields, {[key]: formFields[key]})
-      }
-    })
-    this.props.history.push(`${this.props.location.pathname}?${querystring.stringify(updatedFields)}`);
+    console.log(formFields)
+    this.props.history.push(`${this.props.location.pathname}?${querystring.stringify(formFields[dropDownValue])}`);
+  }
+
+  updateFormFieldStates(newFormFieldState) {
+    const { dropDownValue } = this.state
+    this.setState({
+      formFields: {...this.state.formFields, [dropDownValue]: {...this.state.formFields[dropDownValue],  ...newFormFieldState}}
+    }, this.updateQueryParams)
   }
 
 
   handleChange = (event, index, dropDownValue) => {
     this.setState({dropDownValue}, this.updateQueryParams)
-  }
-
-  updateFormFields = (newFieldState) => {
-    console.log(newFieldState)
-    console.log(this.state.formFields)
-    this.setState({
-      formFields : {...this.state.formFields, ...newFieldState }
-    },     this.updateQueryParams)
-    console.log(this.state.formFields)
   }
 
   getLink(scenario) {
@@ -90,19 +95,25 @@ class Scenarios extends React.Component {
     return (
       <div>
         <DropDownMenu value={dropDownValue} onChange={this.handleChange}>
-          <MenuItem value={'itemTimings'} primaryText='Item Timings' containerElement={this.getLink('itemTimings')}/>     
-          <MenuItem value={'laneRoles'} primaryText="Lane Roles" containerElement={this.getLink('laneRoles')}/>
-          <MenuItem value={'misc'} primaryText="misc" containerElement={this.getLink('misc')}/>
+        {menuItems.map(item => {
+          return (
+            <MenuItem value={item.value} primaryText={item.text} containerElement={this.getLink(item.value)}/>
+          )
+        })}
         </DropDownMenu>
-        <ScenariosFormField fields={fields[dropDownValue]} formFieldState={this.state.formFields} updateFormFields={this.updateFormFields.bind(this)} updateQueryParams={this.updateQueryParams.bind(this)}/>
+        {fields[dropDownValue].map(field => {
+          return (
+          <ScenariosFormField key={field+dropDownValue} field={field} updateQueryParams={this.updateQueryParams.bind(this)} updateFormFieldState={this.updateFormFieldStates.bind(this)}/>
+          )
+        })}
         <FlatButton
           variant="raised"
           color="primary"
-          onClick={() => this.props.scenariosDispatch[dropDownValue](this.state.formFields)}>
+          onClick={() => this.props.scenariosDispatch[dropDownValue](this.state.formFields[dropDownValue])}>
           Primary
         </FlatButton>
         <Table
-           key={dropDownValue}
+          key={dropDownValue}
           data={this.props.scenariosState[dropDownValue].data}
           columns={columns[dropDownValue]}
           loading={this.props.scenariosState[dropDownValue].loading}
