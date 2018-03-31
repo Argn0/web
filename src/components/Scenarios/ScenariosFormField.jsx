@@ -30,11 +30,12 @@ class ScenarioFormField extends React.Component  {
   }
 
   resetField() {
-    this.setState({searchText: ''})
+    const {updateFormFieldState, field} = this.props
+    this.setState({searchText: ''}, updateFormFieldState({[field]: null}))
   }
 
   handleUpdateInput(searchText) {
-    this.setState({searchText})
+    this.setState({searchText}, )
   }
 
   handleRequest(chosenRequest) {
@@ -42,10 +43,19 @@ class ScenarioFormField extends React.Component  {
     updateFormFieldState({[field]: chosenRequest.value})
   }
 
+  componentDidMount() {
+    const {field, formFieldState} = this.props
+    console.log(this.props)
+    let searchText = dataSources[field].find(el => el.value === formFieldState)
+    searchText = searchText ? searchText.text : ''
+    this.setState({searchText})
+  }
+
   render() {
-    const { field, dropDownValue} = this.props
+    const { field, dropDownValue, formFieldState, key} = this.props
+    console.log(formFieldState)
     const {searchText} = this.state
-    console.log(this)
+    console.log(this.state)
     return (
       <div>
       <AutoComplete

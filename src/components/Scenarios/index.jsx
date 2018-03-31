@@ -69,6 +69,7 @@ class Scenarios extends React.Component {
   }
 
   updateFormFieldStates(newFormFieldState) {
+    console.log(this.state)
     const { dropDownValue } = this.state
     this.setState({
       formFields: {...this.state.formFields, [dropDownValue]: {...this.state.formFields[dropDownValue],  ...newFormFieldState}}
@@ -85,8 +86,10 @@ class Scenarios extends React.Component {
   }
 
   componentWillMount() {
-    this.setState({ dropDownValue: this.props.match.params.info || 'itemTimings', 
-    formFields: querystring.parse(this.props.location.search.substring(1)) || null});
+    const dropDownValue = this.props.match.params.info || 'itemTimings'
+    const params = querystring.parse(this.props.location.search.substring(1))
+    this.setState({ dropDownValue, 
+    formFields: {[dropDownValue] : querystring.parse(this.props.location.search.substring(1)) || null}}, this.updateFormFieldStates);
   }
 
   render() {
@@ -103,7 +106,7 @@ class Scenarios extends React.Component {
         </DropDownMenu>
         {fields[dropDownValue].map(field => {
           return (
-          <ScenariosFormField key={field+dropDownValue} field={field} updateQueryParams={this.updateQueryParams.bind(this)} updateFormFieldState={this.updateFormFieldStates.bind(this)}/>
+          <ScenariosFormField key={field+dropDownValue} field={field} updateQueryParams={this.updateQueryParams.bind(this)} updateFormFieldState={this.updateFormFieldStates.bind(this)} formFieldState={formFields[dropDownValue] && formFields[dropDownValue][field]}/>
           )
         })}
         <FlatButton
