@@ -51,21 +51,27 @@ class Scenarios extends React.Component {
 
 
   updateQueryParams() {
-    const {formFields} = this.state
-    Object.keys(formFields).forEach((key) => ((formFields[key] == null || fields[this.state.dropDownValue].indexOf(key) === -1)) && delete formFields[key]);
-    this.props.history.push(`${this.props.location.pathname}?${querystring.stringify(formFields)}`);
+    const {formFields, dropDownValue} = this.state
+    const updatedFields = {}
+    console.log(dropDownValue)
+    console.log(fields[dropDownValue])
+    Object.keys(formFields).forEach(function(key) {
+      if(formFields[key] !== null && fields[dropDownValue].includes(key)) {
+        Object.assign(updatedFields, {[key]: formFields[key]})
+      }
+    })
+    this.props.history.push(`${this.props.location.pathname}?${querystring.stringify(updatedFields)}`);
   }
 
 
   handleChange = (event, index, dropDownValue) => {
-    this.setState({dropDownValue})
-    this.updateQueryParams()
+    console.log(dropDownValue)
+    this.setState({dropDownValue}, this.updateQueryParams)
   }
 
   updateFormFields = (newFieldState) => {
     console.log(newFieldState)
     this.setState({
-      ...this.state,
       formFields : {...this.state.formFields, ...newFieldState }
     })
     console.log(this.state.formFields)
@@ -103,9 +109,11 @@ class Scenarios extends React.Component {
           Primary
         </FlatButton>
         <Table
+           key={dropDownValue}
           data={this.props.scenariosState[dropDownValue].data}
           columns={columns[dropDownValue]}
-          loading={this.props.scenariosState[dropDownValue].loading}/>
+          loading={this.props.scenariosState[dropDownValue].loading}
+          paginated/>
       </div>
     );
   }
