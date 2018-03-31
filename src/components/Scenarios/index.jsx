@@ -53,8 +53,6 @@ class Scenarios extends React.Component {
   updateQueryParams() {
     const {formFields, dropDownValue} = this.state
     const updatedFields = {}
-    console.log(dropDownValue)
-    console.log(fields[dropDownValue])
     Object.keys(formFields).forEach(function(key) {
       if(formFields[key] !== null && fields[dropDownValue].includes(key)) {
         Object.assign(updatedFields, {[key]: formFields[key]})
@@ -65,17 +63,16 @@ class Scenarios extends React.Component {
 
 
   handleChange = (event, index, dropDownValue) => {
-    console.log(dropDownValue)
     this.setState({dropDownValue}, this.updateQueryParams)
   }
 
   updateFormFields = (newFieldState) => {
     console.log(newFieldState)
+    console.log(this.state.formFields)
     this.setState({
       formFields : {...this.state.formFields, ...newFieldState }
-    })
+    },     this.updateQueryParams)
     console.log(this.state.formFields)
-    this.updateQueryParams()
   }
 
   getLink(scenario) {
@@ -88,12 +85,8 @@ class Scenarios extends React.Component {
   }
 
   render() {
-    console.log(this.props)
-    console.log(this.state)
-    console.log(querystring.parse(this.props.location.search))
     const dropDownValue  = this.state.dropDownValue
     const formFields =  this.state.formFields
-    console.log(dropDownValue)
     return (
       <div>
         <DropDownMenu value={dropDownValue} onChange={this.handleChange}>

@@ -2,7 +2,7 @@ import React from 'react';
 import AutoComplete from 'material-ui/AutoComplete';
 import {itemList, heroList, laneRoleList, miscList} from './FormFieldData';
 
-const autocomplete = {}
+const autoCompleteRefs = {}
 const dataSources= {
   hero_id : heroList,
   item: itemList,
@@ -10,9 +10,15 @@ const dataSources= {
   scenario: miscList,
 }
 
+const hintText = {
+  hero_id : 'Hero ID',
+  item: 'Item',
+  scenario: 'Scenario',
+  lane_role: 'Lane Role',
+}
+
 function resetField(field, updateFormFields) {
-    autocomplete[field].setState({searchText: ''})
-    updateFormFields({[field]: null})
+  autoCompleteRefs[field].setState({searchText: ''}, updateFormFields({[field]: ''}))
   }
 
 function setDefaultText(field, formFieldState) {
@@ -31,7 +37,6 @@ class ScenarioFormField extends React.Component  {
   handleUpdateInput(field) {
     return (searchText) =>
     this.setState({
-      ...this.state,
       [field]: {
       searchText,
       }
@@ -40,29 +45,24 @@ class ScenarioFormField extends React.Component  {
   componentWillMount() {
     this.props.fields.forEach(function(field) {
       if (dataSources[field] && dataSources[field].find(x=>x.value === this.props.formFieldState[field])) {
-        console.log("dasd")
-      this.setState({...this.state, [field]: {searchText: dataSources[field].find(x=>x.value === this.props.formFieldState[field]).text}})
+      this.setState({[field]: {searchText: dataSources[field].find(x=>x.value === this.props.formFieldState[field]).text}})
       }
     }, this)
   }
 
   render() {
     const {fields, updateFormFields , updateQueryParams, formFieldState} = this.props
-    console.log(this.state)
-    console.log(this)
-    console.log(this.state)
     return (
         <div>
           {fields
             .map(function (field) {
-              console.log(this)
-              console.log(this.state)
               return (<AutoComplete
                 key={field}
+                hintText={hintText[field]}
                 openOnFocus
                 dataSource={dataSources[field]}
                 ref={(ref) => {
-                autocomplete[field] = ref;
+                  autoCompleteRefs[field] = ref;
                 return null;
               }}
               listStyle={{ maxHeight: 250, overflow: 'auto' }}
@@ -72,7 +72,7 @@ class ScenarioFormField extends React.Component  {
                   )
               }}
               onUpdateInput={this.handleUpdateInput(field)}
-              searchText={this.state[field] && this.state[field].searchText || null}
+              searchText={this.state[field] && this.state[field].searchText || ''}
                 onClick={() =>  resetField(field, updateFormFields)   }  
                 onClose={updateQueryParams}
                 />)
