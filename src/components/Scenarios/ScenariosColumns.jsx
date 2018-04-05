@@ -13,7 +13,8 @@ import Heading from 'components/Heading';
 import {
   transformations,
   formatSeconds,
-  getOrdinal
+  getOrdinal, 
+  abbreviateNumber
 } from 'utility';
 // import { IconRadiant, IconDire, IconTrophy } from 'components/Icons';
 import Container from 'components/Container';
@@ -22,7 +23,6 @@ import FormField from 'components/Form/FormField';
 import {
   getScenariosItemTimings,
   getScenariosLaneRoles,
-  getScenariosMisc
 } from '../../actions/index';
 import fetch from 'isomorphic-fetch';
 import {
@@ -55,7 +55,7 @@ import {
 } from 'components/Visualizations';
 
 
-const computeWinRate = row => (row.wins / row.games * 100).toFixed(2)
+const computeWinRate = row => (row.wins / row.games)
 
 export const columns = {
   itemTimings: [{
@@ -75,7 +75,9 @@ export const columns = {
     displayFn: (row, col, field) => inflictorWithValue(field)
   }, {
     displayName: 'wr%',
-    sortFn: computeWinRate
+    field: 'wins',
+    sortFn: computeWinRate,
+    percentBars: true,
   }],
 
   laneRoles: [{
@@ -95,26 +97,8 @@ export const columns = {
     displayFn: (row, col, field) => formatSeconds(field)
   },   {
     displayName: 'wr%',
-    sortFn: computeWinRate
-  }],
-
-  misc: [{
-    displayName: 'scenario',
-    field: 'scenario',
-    sortFn: true,
-    displayFn: (row, col, field) => field
-  }, {
-    displayName: 'region',
-    field: 'region',
-    sortFn: true,
-    displayFn: (row, col, field) => field
-  }, {
-    displayName: 'is_radiant',
-    field: 'is_radiant',
-    sortFn: true,
-    displayFn: (row, col, field) => field ? 'Radiant' : 'Dire'
-  },  {
-    displayName: 'wr%',
-    sortFn: computeWinRate
-  }],
+    field: 'wins',
+    sortFn: computeWinRate,
+    percentBars: true
+  },]
 }

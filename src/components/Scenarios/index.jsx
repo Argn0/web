@@ -11,7 +11,7 @@ import {transformations, formatSeconds, getOrdinal} from 'utility';
 import Container from 'components/Container';
 import TabBar from 'components/TabBar';
 import FormField from 'components/Form/FormField';
-import {getScenariosItemTimings, getScenariosLaneRoles, getScenariosMisc} from '../../actions/index';
+import {getScenariosItemTimings, getScenariosLaneRoles} from '../../actions/index';
 import fetch from 'isomorphic-fetch';
 import {withRouter} from 'react-router-dom';
 import querystring from 'querystring';
@@ -29,12 +29,11 @@ import ScenariosFormField from './ScenariosFormField';
 import { Link } from 'react-router-dom';
 import { columns } from './ScenariosColumns.jsx'
 
-
+const minSampleSize = x => x.games > 100
 
 const fields = {
 itemTimings: ['hero_id', 'item'],
 laneRoles: ['hero_id', 'lane_role'],
-misc: ['scenario']
 }
 
 const menuItems = [{
@@ -45,20 +44,19 @@ const menuItems = [{
     text: 'Lane Roles',
     value: 'laneRoles'
   },
-  {
-    text: 'misc',
-    value: 'misc'
-  },
 ]
 
 class Scenarios extends React.Component {
   constructor(props) {
     super(props);
+    const dropDownValue = this.props.match.params.info || 'itemTimings'
+    const params = querystring.parse(this.props.location.search.substring(1))
     this.state = {
-      dropDownValue: null,
-      formFields : {},
-      queryParams: {}
+      dropDownValue,
+      formFields : {[dropDownValue] : querystring.parse(this.props.location.search.substring(1)) || null},
     };
+    this.updateFormFieldStates()
+    this.getData = this.getData.bind(this)
   }
 
 
@@ -85,16 +83,24 @@ class Scenarios extends React.Component {
     return <Link to={`/scenarios/${scenario}?` + querystring.stringify(this.state.formFields)}/> 
   }
 
-  componentWillMount() {
-    const dropDownValue = this.props.match.params.info || 'itemTimings'
-    const params = querystring.parse(this.props.location.search.substring(1))
-    this.setState({ dropDownValue, 
-    formFields: {[dropDownValue] : querystring.parse(this.props.location.search.substring(1)) || null}}, this.updateFormFieldStates);
+  getData() {
+    const { scenariosDispatch } = this.props
+    const {dropDownValue , formFields} = this.state
+    scenariosDispatch[dropDownValue](formFields[dropDownValue])
+  }
+
+  componentDidMount() {
+    const {dropDownValue , formFields} = this.state
+    if (Object.keys(formFields[dropDownValue]).length > 0) {
+      this.getData()
+    }
   }
 
   render() {
-    const dropDownValue  = this.state.dropDownValue
-    const formFields =  this.state.formFields
+    const { scenariosState } = this.props
+    const {dropDownValue , formFields} = this.state
+    const data = scenariosState[dropDownValue].data
+    console.log(this.props)
     return (
       <div>
         <DropDownMenu value={dropDownValue} onChange={this.handleChange}>
@@ -112,14 +118,14 @@ class Scenarios extends React.Component {
         <FlatButton
           variant="raised"
           color="primary"
-          onClick={() => this.props.scenariosDispatch[dropDownValue](this.state.formFields[dropDownValue])}>
+          onClick={this.getData}>
           Primary
         </FlatButton>
         <Table
           key={dropDownValue}
-          data={this.props.scenariosState[dropDownValue].data}
+          data={data.filter(minSampleSize)}
           columns={columns[dropDownValue]}
-          loading={this.props.scenariosState[dropDownValue].loading}
+          loading={scenariosState[dropDownValue].loading}
           paginated/>
       </div>
     );
@@ -136,7 +142,6 @@ const mapStateToProps = state => {
   const {
     scenariosItemTimings,
     scenariosLaneRoles,
-    scenariosMisc,
   } = state.app
 
   return {
@@ -150,11 +155,6 @@ const mapStateToProps = state => {
       data: scenariosLaneRoles.data,
       loading: scenariosLaneRoles.loading,
       error: scenariosLaneRoles.error
-    },
-    misc: {
-      data: scenariosMisc.data,
-      loading:scenariosMisc.loading,
-      error: scenariosMisc.error
     }
   }
   };
@@ -164,7 +164,6 @@ const mapDispatchToProps = dispatch => ({
   scenariosDispatch: {
     itemTimings: (params) => dispatch(getScenariosItemTimings(params)),
     laneRoles: (params) => dispatch(getScenariosLaneRoles(params)),
-    misc: (params) => dispatch(getScenariosMisc(params)),
   }
 });
 

@@ -1,13 +1,12 @@
 import React from 'react';
 import AutoComplete from 'material-ui/AutoComplete';
-import {itemList, heroList, laneRoleList, miscList} from './FormFieldData';
+import {itemList, heroList, laneRoleList} from './FormFieldData';
 
 const autoCompleteRefs = {}
 const dataSources= {
   hero_id : heroList,
   item: itemList,
   lane_role: laneRoleList,
-  scenario: miscList,
 }
 
 const hintText = {
