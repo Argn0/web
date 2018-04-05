@@ -49,6 +49,7 @@ export default combineReducers({
   ghPulls: reducer('ghPulls'),
   form,
   request,
-  scenariosItemTimings: reducer('scenariosItemTimings', null, true),
-  scenariosLaneRoles: reducer('scenariosLaneRoles', null, true),
+  scenariosItemTimings: reducer('scenariosItemTimings', null, false),
+  scenariosLaneRoles: reducer('scenariosLaneRoles', null, false),
+  scenariosMisc: reducer('scenariosMisc', null, false),
 });
