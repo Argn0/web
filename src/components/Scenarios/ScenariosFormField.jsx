@@ -1,14 +1,9 @@
 import React from 'react';
 import AutoComplete from 'material-ui/AutoComplete';
-import { itemList, heroList, laneRoleList, miscList } from './FormFieldData';
+import getFormFieldData from './FormFieldData';
 
 const autoCompleteRefs = {};
-const dataSources = {
-  hero_id: heroList,
-  item: itemList,
-  lane_role: laneRoleList,
-  scenario: miscList,
-};
+
 
 const hintText = {
   hero_id: 'Hero ID',
@@ -24,10 +19,20 @@ class ScenarioFormField extends React.Component {
     this.state = {
       searchText: '',
     };
+    const {heroList, itemList, laneRoleList, miscList } = getFormFieldData(this.props.metaData)
+    this.dataSources = {
+      hero_id: heroList,
+      item: itemList,
+      lane_role: laneRoleList,
+      scenario: miscList,
+    };
+    
     this.resetField = this.resetField.bind(this);
     this.handleUpdateInput = this.handleUpdateInput.bind(this);
     this.handleRequest = this.handleRequest.bind(this);
   }
+
+
 
   resetField() {
     const { updateFormFieldState, field } = this.props;
@@ -46,7 +51,7 @@ class ScenarioFormField extends React.Component {
   componentDidMount() {
     const { field, formFieldState } = this.props;
     console.log(this.props);
-    let searchText = dataSources[field].find(el => el.value === formFieldState);
+    let searchText = this.dataSources[field].find(el => el.value === formFieldState);
     searchText = searchText ? searchText.text : '';
     this.setState({ searchText });
   }
@@ -58,6 +63,7 @@ class ScenarioFormField extends React.Component {
     console.log(formFieldState);
     const { searchText } = this.state;
     console.log(this.state);
+    console.log(this.dataSources)
     return (
       <div>
         <AutoComplete
@@ -65,7 +71,7 @@ class ScenarioFormField extends React.Component {
           listStyle={{ maxHeight: 400, overflow: 'auto' }}
           filter={AutoComplete.caseInsensitiveFilter}
           floatingLabelText="label"
-          dataSource={dataSources[field]}
+          dataSource={this.dataSources[field]}
           onClick={this.resetField}
           onUpdateInput={this.handleUpdateInput}
           searchText={searchText}

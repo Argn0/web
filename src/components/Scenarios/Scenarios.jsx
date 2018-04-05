@@ -139,7 +139,7 @@ class Scenarios extends React.Component {
           ))}
         </DropDownMenu>
         {fields[dropDownValue].map(field => (
-          <ScenariosFormField key={field + dropDownValue} field={field} updateQueryParams={this.updateQueryParams.bind(this)} updateFormFieldState={this.updateFormFieldStates.bind(this)} formFieldState={formFields[dropDownValue] && formFields[dropDownValue][field]} />
+          <ScenariosFormField key={field + dropDownValue} field={field} updateQueryParams={this.updateQueryParams.bind(this)} updateFormFieldState={this.updateFormFieldStates.bind(this)} formFieldState={formFields[dropDownValue] && formFields[dropDownValue][field]} metaData={metaData}/>
           ))}
         <FlatButton
           variant="raised"
