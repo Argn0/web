@@ -28,6 +28,10 @@ import { itemList, heroList } from './FormFieldData';
 import ScenariosFormField from './ScenariosFormField';
 import { Link } from 'react-router-dom';
 import { columns } from './ScenariosColumns.jsx';
+import {buttonStyle, formFieldStyle} from './Styles.jsx'
+import ActionSearch from 'material-ui/svg-icons/action/search';
+import constants from '../constants';
+
 
 // placeholder, will be replaced by api call
 export const metaData = {
@@ -138,15 +142,20 @@ class Scenarios extends React.Component {
             <MenuItem value={item.value} primaryText={item.text} containerElement={this.getLink(item.value)} />
           ))}
         </DropDownMenu>
+        <div style={formFieldStyle}>
         {fields[dropDownValue].map(field => (
           <ScenariosFormField key={field + dropDownValue} field={field} updateQueryParams={this.updateQueryParams.bind(this)} updateFormFieldState={this.updateFormFieldStates.bind(this)} formFieldState={formFields[dropDownValue] && formFields[dropDownValue][field]} metaData={metaData}/>
           ))}
+        </div>
         <FlatButton
           variant="raised"
           color="primary"
           onClick={this.getData}
+          style={buttonStyle}
+          label={strings.explorer_query_button}
+          icon={<ActionSearch/>}
+          primary
         >
-          Primary
         </FlatButton>
         <Table
           key={dropDownValue}

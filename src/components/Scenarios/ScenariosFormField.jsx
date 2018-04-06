@@ -1,6 +1,7 @@
 import React from 'react';
 import AutoComplete from 'material-ui/AutoComplete';
 import getFormFieldData from './FormFieldData';
+import {formFieldStyle} from './Styles.jsx'
 
 const autoCompleteRefs = {};
 
@@ -76,6 +77,7 @@ class ScenarioFormField extends React.Component {
           onUpdateInput={this.handleUpdateInput}
           searchText={searchText}
           onNewRequest={this.handleRequest}
+          style={{paddingRight: '20px'}}
         />
       </div>
     );
