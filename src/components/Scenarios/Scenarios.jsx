@@ -28,7 +28,7 @@ const metadata = {
   },
 };
 
-const minSampleSize = x => x.games > 200;
+const minSampleSize = x => x.games > 100;
 
 const fields = {
   itemTimings: ['hero_id', 'item'],
@@ -64,12 +64,16 @@ const reduceRows = (data) => {
 class Scenarios extends React.Component {
   constructor(props) {
     super(props);
+
     const dropDownValue = this.props.match.params.info || 'itemTimings';
+    const params = this.props.location.search.substring(1);
     this.state = {
       dropDownValue,
-      formFields: { [dropDownValue]: querystring.parse(this.props.location.search.substring(1)) || null },
+      formFields: { [dropDownValue]: querystring.parse(params) || null },
     };
+
     this.updateFormFieldStates();
+    
     this.getData = this.getData.bind(this);
     this.updateQueryParams = this.updateQueryParams.bind(this);
     this.updateFormFieldStates = this.updateFormFieldStates.bind(this);
