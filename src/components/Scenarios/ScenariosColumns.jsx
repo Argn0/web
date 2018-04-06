@@ -1,117 +1,80 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import {
-  connect,
-} from 'react-redux';
-import Helmet from 'react-helmet';
-import {
-  getRecords,
-} from 'actions';
 import strings from 'lang';
-import Table from 'components/Table';
-import Heading from 'components/Heading';
-import {
-  transformations,
-  formatSeconds,
-  getOrdinal,
-  abbreviateNumber,
-} from 'utility';
-// import { IconRadiant, IconDire, IconTrophy } from 'components/Icons';
-import Container from 'components/Container';
-import TabBar from 'components/TabBar';
-import FormField from 'components/Form/FormField';
-import {
-  getScenariosItemTimings,
-  getScenariosLaneRoles,
-  getScenariosMisc,
-} from '../../actions/index';
-import fetch from 'isomorphic-fetch';
-import {
-  withRouter,
-} from 'react-router-dom';
-import querystring from 'querystring';
-import {
-  toggleShowForm,
-} from 'actions/formActions';
-import styled from 'styled-components';
-import * as data from './FormFieldData';
-import AutoComplete from 'material-ui/AutoComplete';
-import FlatButton from 'material-ui/FlatButton';
-import heroes from 'dotaconstants/build/heroes.json';
-import items from 'dotaconstants/build/items.json';
-import MenuItem from 'material-ui/MenuItem';
-import {
-  DropDownMenu,
-} from 'material-ui/DropDownMenu';
-import {
-  itemList,
-  heroList,
-} from './FormFieldData';
-import ScenariosFormField from './ScenariosFormField';
-import {
-  Link,
-} from 'react-router-dom';
-import {
-  inflictorWithValue,
-} from 'components/Visualizations';
-
+import { transformations, formatSeconds } from 'utility';
+import { inflictorWithValue } from 'components/Visualizations';
 
 const computeWinRate = row => (row.wins / row.games);
 
-export const columns = {
+const getTimeRange = (field, metadata) => {
+  let lower;
+  if (metadata.indexOf(field) !== 0) {
+    lower = metadata[metadata.indexOf(field) - 1];
+  } else {
+    lower = 0;
+  }
+  return `${formatSeconds(lower)} - ${formatSeconds(field)}`;
+};
+
+const getColumns = (f, metadata) => {
+  const columns =
+{
   itemTimings: [{
-    displayName: 'hero',
+    displayName: strings.filter_hero_id,
     field: 'hero_id',
     sortFn: true,
     displayFn: transformations.hero_id,
   }, {
-    displayName: 'time',
+    displayName: strings.time,
     field: 'time',
-    sortFn: true,
-    displayFn: (row, col, field) => formatSeconds(field),
+    sortFn: row => row.time,
+    displayFn: (row, col, field) => getTimeRange(field, metadata.timings),
   }, {
-    displayName: 'item',
+    displayName: strings.item,
     field: 'item',
     sortFn: true,
     displayFn: (row, col, field) => inflictorWithValue(field),
   }, {
-    displayName: 'wr%',
+    displayName: strings.heading_win_rate,
     field: 'wins',
     sortFn: computeWinRate,
     percentBars: true,
   }],
 
   laneRoles: [{
-    displayName: 'hero',
+    displayName: strings.filter_hero_id,
     field: 'hero_id',
     sortFn: true,
     displayFn: transformations.hero_id,
   }, {
-    displayName: 'lane',
+    displayName: strings.heading_lane_role,
     field: 'lane_role',
     sortFn: true,
     displayFn: (row, col, field) => strings[`lane_role_${field}`],
   }, {
-    displayName: 'gameduriation',
+    displayName: strings.game_duration,
     field: 'time',
     sortFn: true,
-    displayFn: (row, col, field) => formatSeconds(field),
+    displayFn: (row, col, field) => getTimeRange(field, metadata.gameDurationBucket),
   }, {
-    displayName: 'wr%',
+    displayName: strings.heading_win_rate,
     field: 'wins',
     sortFn: computeWinRate,
     percentBars: true,
   }],
 
   misc: [{
-    displayName: 'scenario',
+    displayName: strings.scenario,
     field: 'scenario',
     sortFn: true,
     displayFn: (row, col, field) => field,
   }, {
-    displayName: 'wr%',
+    displayName: strings.heading_win_rate,
     field: 'wins',
     sortFn: computeWinRate,
     percentBars: true,
   }],
 };
+
+  return columns[f];
+};
+
+export default getColumns;

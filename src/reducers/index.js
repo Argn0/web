@@ -2,7 +2,6 @@ import { combineReducers } from 'redux';
 import reducer from 'reducers/reducer';
 import request from 'reducers/request';
 import form from 'reducers/form';
-import { reducePropsToState } from 'react-helmet/lib/HelmetUtils';
 
 export default combineReducers({
   player: reducer('player'),

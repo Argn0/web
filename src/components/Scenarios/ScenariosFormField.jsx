@@ -1,39 +1,43 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+import strings from 'lang';
 import AutoComplete from 'material-ui/AutoComplete';
 import getFormFieldData from './FormFieldData';
-import {formFieldStyle} from './Styles.jsx'
-
-const autoCompleteRefs = {};
-
+import { autoCompleteStyle } from './Styles';
 
 const hintText = {
-  hero_id: 'Hero ID',
-  item: 'Item',
-  scenario: 'Scenario',
-  lane_role: 'Lane Role',
+  hero_id: strings.filter_hero_id,
+  item: strings.item,
+  scenario: strings.scenario,
+  lane_role: strings.heading_lane_role,
 };
-
 
 class ScenarioFormField extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      searchText: '',
-    };
-    const {heroList, itemList, laneRoleList, miscList } = getFormFieldData(this.props.metaData)
+    const { field, formFieldState, metadata } = this.props;
+
+    const {
+      heroList, itemList, laneRoleList, miscList,
+    } = getFormFieldData(metadata);
     this.dataSources = {
       hero_id: heroList,
       item: itemList,
       lane_role: laneRoleList,
       scenario: miscList,
     };
-    
+
+    let searchText = this.dataSources[field].find(el => el.value === formFieldState);
+    searchText = searchText ? searchText.text : '';
+
+    this.state = {
+      searchText,
+    };
+
     this.resetField = this.resetField.bind(this);
     this.handleUpdateInput = this.handleUpdateInput.bind(this);
     this.handleRequest = this.handleRequest.bind(this);
   }
-
-
 
   resetField() {
     const { updateFormFieldState, field } = this.props;
@@ -49,40 +53,33 @@ class ScenarioFormField extends React.Component {
     updateFormFieldState({ [field]: chosenRequest.value });
   }
 
-  componentDidMount() {
-    const { field, formFieldState } = this.props;
-    console.log(this.props);
-    let searchText = this.dataSources[field].find(el => el.value === formFieldState);
-    searchText = searchText ? searchText.text : '';
-    this.setState({ searchText });
-  }
-
   render() {
-    const {
-      field, dropDownValue, formFieldState, key,
-    } = this.props;
-    console.log(formFieldState);
+    const { field } = this.props;
     const { searchText } = this.state;
-    console.log(this.state);
-    console.log(this.dataSources)
     return (
       <div>
         <AutoComplete
           openOnFocus
           listStyle={{ maxHeight: 400, overflow: 'auto' }}
           filter={AutoComplete.caseInsensitiveFilter}
-          floatingLabelText="label"
+          floatingLabelText={hintText[field]}
           dataSource={this.dataSources[field]}
           onClick={this.resetField}
           onUpdateInput={this.handleUpdateInput}
           searchText={searchText}
           onNewRequest={this.handleRequest}
-          style={{paddingRight: '20px'}}
+          style={autoCompleteStyle}
         />
       </div>
     );
   }
 }
 
+ScenarioFormField.propTypes = {
+  field: PropTypes.string,
+  formFieldState: PropTypes.shape({}),
+  metadata: PropTypes.shape({}),
+  updateFormFieldState: PropTypes.func,
+};
 
 export default ScenarioFormField;

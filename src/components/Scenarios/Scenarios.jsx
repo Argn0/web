@@ -1,52 +1,34 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import Helmet from 'react-helmet';
-import { getRecords } from 'actions';
 import strings from 'lang';
 import Table from 'components/Table';
-import Heading from 'components/Heading';
-import { transformations, formatSeconds, getOrdinal } from 'utility';
-// import { IconRadiant, IconDire, IconTrophy } from 'components/Icons';
-import Container from 'components/Container';
-import TabBar from 'components/TabBar';
-import FormField from 'components/Form/FormField';
-import { getScenariosItemTimings, getScenariosMisc, getScenariosLaneRoles } from '../../actions/index';
-import fetch from 'isomorphic-fetch';
-import { withRouter } from 'react-router-dom';
+import ActionSearch from 'material-ui/svg-icons/action/search';
+import { withRouter, Link } from 'react-router-dom';
 import querystring from 'querystring';
-import { toggleShowForm } from 'actions/formActions';
-import styled from 'styled-components';
-import * as data from './FormFieldData';
-import AutoComplete from 'material-ui/AutoComplete';
 import FlatButton from 'material-ui/FlatButton';
-import heroes from 'dotaconstants/build/heroes.json';
-import items from 'dotaconstants/build/items.json';
 import MenuItem from 'material-ui/MenuItem';
 import { DropDownMenu } from 'material-ui/DropDownMenu';
-import { itemList, heroList } from './FormFieldData';
 import ScenariosFormField from './ScenariosFormField';
-import { Link } from 'react-router-dom';
-import { columns } from './ScenariosColumns.jsx';
-import {buttonStyle, formFieldStyle} from './Styles.jsx'
-import ActionSearch from 'material-ui/svg-icons/action/search';
-import constants from '../constants';
+import getColumns from './ScenariosColumns';
+import { buttonStyle, formFieldStyle } from './Styles';
+import { getScenariosItemTimings, getScenariosMisc, getScenariosLaneRoles } from '../../actions/index';
 
 
 // placeholder, will be replaced by api call
-export const metaData = {
+const metadata = {
   timings: [450, 600, 720, 900, 1200, 1500, 1800],
   gameDurationBucket: [900, 1800, 2700, 3600, 5400],
   itemCost: 2000,
   teamScenariosQueryParams: {
-  pos_chat_1min: 'Positivity in chat before 1 minute',
-  neg_chat_1min: 'Negativity in chat before 1 minute',
-  courier_kill: 'Courier Kill before 3 minutes',
-  first_blood: 'First Blood',
-}
-}
+    pos_chat_1min: 'Positivity in chat before 1 minute',
+    neg_chat_1min: 'Negativity in chat before 1 minute',
+    courier_kill: 'Courier Kill before 3 minutes',
+    first_blood: 'First Blood',
+  },
+};
 
-const minSampleSize = x => x.games > 0;
+const minSampleSize = x => x.games > 200;
 
 const fields = {
   itemTimings: ['hero_id', 'item'],
@@ -55,15 +37,15 @@ const fields = {
 };
 
 const menuItems = [{
-  text: 'Item Timings',
+  text: strings.item_timings,
   value: 'itemTimings',
 },
 {
-  text: 'Lane Roles',
+  text: strings.heading_lane_role,
   value: 'laneRoles',
 },
 {
-  text: 'Misc',
+  text: strings.misc,
   value: 'misc',
 },
 ];
@@ -83,43 +65,14 @@ class Scenarios extends React.Component {
   constructor(props) {
     super(props);
     const dropDownValue = this.props.match.params.info || 'itemTimings';
-    const params = querystring.parse(this.props.location.search.substring(1));
     this.state = {
       dropDownValue,
       formFields: { [dropDownValue]: querystring.parse(this.props.location.search.substring(1)) || null },
     };
     this.updateFormFieldStates();
     this.getData = this.getData.bind(this);
-  }
-
-
-  updateQueryParams() {
-    const { formFields, dropDownValue } = this.state;
-    console.log(formFields);
-    this.props.history.push(`${this.props.location.pathname}?${querystring.stringify(formFields[dropDownValue])}`);
-  }
-
-  updateFormFieldStates(newFormFieldState) {
-    console.log(this.state);
-    const { dropDownValue } = this.state;
-    this.setState({
-      formFields: { ...this.state.formFields, [dropDownValue]: { ...this.state.formFields[dropDownValue], ...newFormFieldState } },
-    }, this.updateQueryParams);
-  }
-
-
-  handleChange = (event, index, dropDownValue) => {
-    this.setState({ dropDownValue }, this.updateQueryParams);
-  }
-
-  getLink(scenario) {
-    return <Link to={`/scenarios/${scenario}?${querystring.stringify(this.state.formFields)}`} />;
-  }
-
-  getData() {
-    const { scenariosDispatch } = this.props;
-    const { dropDownValue, formFields } = this.state;
-    scenariosDispatch[dropDownValue](formFields[dropDownValue]);
+    this.updateQueryParams = this.updateQueryParams.bind(this);
+    this.updateFormFieldStates = this.updateFormFieldStates.bind(this);
   }
 
   componentDidMount() {
@@ -129,12 +82,37 @@ class Scenarios extends React.Component {
     }
   }
 
+  getData() {
+    const { scenariosDispatch } = this.props;
+    const { dropDownValue, formFields } = this.state;
+    scenariosDispatch[dropDownValue](formFields[dropDownValue]);
+  }
+
+  getLink(scenario) {
+    return <Link to={`/scenarios/${scenario}?${querystring.stringify(this.state.formFields)}`} />;
+  }
+
+  handleChange = (event, index, dropDownValue) => {
+    this.setState({ dropDownValue }, this.updateQueryParams);
+  }
+
+  updateQueryParams() {
+    const { formFields, dropDownValue } = this.state;
+    const { location } = this.props;
+    this.props.history.push(`${location.pathname}?${querystring.stringify(formFields[dropDownValue])}`);
+  }
+
+  updateFormFieldStates(newFormFieldState) {
+    const { dropDownValue, formFields } = this.state;
+    this.setState({
+      formFields: { ...formFields, [dropDownValue]: { ...formFields[dropDownValue], ...newFormFieldState } },
+    }, this.updateQueryParams);
+  }
+
   render() {
     const { scenariosState } = this.props;
     const { dropDownValue, formFields } = this.state;
-    const data = scenariosState[dropDownValue].data;
-    console.log(this.props);
-    console.log(data);
+    const { data } = scenariosState[dropDownValue];
     return (
       <div>
         <DropDownMenu value={dropDownValue} onChange={this.handleChange}>
@@ -143,24 +121,28 @@ class Scenarios extends React.Component {
           ))}
         </DropDownMenu>
         <div style={formFieldStyle}>
-        {fields[dropDownValue].map(field => (
-          <ScenariosFormField key={field + dropDownValue} field={field} updateQueryParams={this.updateQueryParams.bind(this)} updateFormFieldState={this.updateFormFieldStates.bind(this)} formFieldState={formFields[dropDownValue] && formFields[dropDownValue][field]} metaData={metaData}/>
-          ))}
+          {fields[dropDownValue].map(field => (
+            <ScenariosFormField
+              key={field + dropDownValue}
+              field={field}
+              updateQueryParams={this.updateQueryParams}
+              updateFormFieldState={this.updateFormFieldStates}
+              formFieldState={formFields[dropDownValue] && formFields[dropDownValue][field]}
+              metadata={metadata}
+            />
+        ))}
         </div>
         <FlatButton
-          variant="raised"
-          color="primary"
           onClick={this.getData}
           style={buttonStyle}
           label={strings.explorer_query_button}
-          icon={<ActionSearch/>}
+          icon={<ActionSearch />}
           primary
-        >
-        </FlatButton>
+        />
         <Table
           key={dropDownValue}
           data={data.filter(minSampleSize)}
-          columns={columns[dropDownValue]}
+          columns={getColumns(dropDownValue, metadata)}
           loading={scenariosState[dropDownValue].loading}
           paginated
         />
@@ -211,5 +193,17 @@ const mapDispatchToProps = dispatch => ({
   },
 });
 
+Scenarios.propTypes = {
+  location: PropTypes.shape({
+    search: PropTypes.shape({
+      substring: PropTypes.string,
+    }),
+  }),
+  history: PropTypes.shape({
+    push: PropTypes.func,
+  }),
+  scenariosState: PropTypes.shape({}),
+  scenariosDispatch: PropTypes.shape({}),
+};
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Scenarios));
