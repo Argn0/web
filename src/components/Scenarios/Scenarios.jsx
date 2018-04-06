@@ -73,7 +73,7 @@ class Scenarios extends React.Component {
     };
 
     this.updateFormFieldStates();
-    
+
     this.getData = this.getData.bind(this);
     this.updateQueryParams = this.updateQueryParams.bind(this);
     this.updateFormFieldStates = this.updateFormFieldStates.bind(this);
