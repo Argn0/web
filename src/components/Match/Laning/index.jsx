@@ -1,30 +1,46 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import strings from 'lang';
-import Heading from 'components/Heading';
-import Heatmap from 'components/Heatmap';
-import Table from 'components/Table';
-import { unpackPositionData } from 'utility';
-import { laningColumns } from 'components/Match/matchColumns';
+import Heading from '../../Heading';
+import Heatmap from '../../Heatmap';
+import Table from '../../Table';
+import { unpackPositionData } from '../../../utility';
+import mcs from '../matchColumns';
 import { StyledFlexContainer, StyledFlexElement } from '../StyledMatch';
 
 class Laning extends React.Component {
+  static propTypes = {
+    match: PropTypes.shape({}),
+    strings: PropTypes.shape({}),
+    sponsorURL: PropTypes.string,
+    sponsorIcon: PropTypes.string,
+  }
+
   constructor(props) {
     super(props);
     this.state = {
       selectedPlayer: 0,
     };
-    this.setSelectedPlayer = this.setSelectedPlayer.bind(this);
   }
-  setSelectedPlayer(playerSlot) {
+
+  setSelectedPlayer = (playerSlot) => {
     this.setState({ ...this.state, selectedPlayer: playerSlot });
-  }
+  };
+
   render() {
-    const { match } = this.props;
+    const {
+      match, strings, sponsorURL, sponsorIcon,
+    } = this.props;
+    const { laningColumns } = mcs(strings);
     return (
       <StyledFlexContainer>
-        <StyledFlexElement >
-          <Heading title={strings.th_map} />
+        <StyledFlexElement>
+          <Heading
+            title={strings.th_map}
+            buttonLabel={strings.gosu_laning}
+            buttonTo={`${sponsorURL}Laning`}
+            buttonIcon={sponsorIcon}
+          />
           <Heatmap width={400} points={unpackPositionData((match.players.find(player => player.player_slot === this.state.selectedPlayer) || {}).lane_pos)} />
         </StyledFlexElement>
         <StyledFlexElement>
@@ -38,8 +54,8 @@ class Laning extends React.Component {
   }
 }
 
-Laning.propTypes = {
-  match: PropTypes.shape({}),
-};
+const mapStateToProps = state => ({
+  strings: state.app.strings,
+});
 
-export default Laning;
+export default connect(mapStateToProps)(Laning);

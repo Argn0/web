@@ -1,7 +1,7 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import AutoComplete from 'material-ui/AutoComplete';
-import strings from 'lang';
 import querystring from 'querystring';
 import ChipList from './ChipList';
 import constants from '../constants';
@@ -39,17 +39,37 @@ const deleteChipDefault = (name, index, history) => {
 };
 
 class FormField extends React.Component {
+  static propTypes = {
+    name: PropTypes.string,
+    dataSource: PropTypes.arrayOf({}),
+    strict: PropTypes.bool,
+    limit: PropTypes.number,
+    formSelectionState: PropTypes.shape({}),
+    addChip: PropTypes.string,
+    history: PropTypes.shape({}),
+    label: PropTypes.string,
+    filter: PropTypes.string,
+    className: PropTypes.string,
+    maxSearchResults: PropTypes.string,
+    deleteChip: PropTypes.string,
+    strings: PropTypes.shape({}),
+    resetField: PropTypes.func,
+  }
+
   constructor(props) {
     super(props);
+    const { formSelectionState, name } = this.props;
+    const initialState = formSelectionState[name] && this.findFromSource(Array.isArray(formSelectionState[name]) ? formSelectionState[name][0] : formSelectionState[name]);
+
     this.state = {
       searchText: '',
       errorText: '',
+      selectedBundle: undefined || (initialState && initialState.bundle),
+      singleSelection: initialState && initialState.singleSelection,
     };
-    this.handleSelect = this.handleSelect.bind(this);
-    this.handleUpdateInput = this.handleUpdateInput.bind(this);
   }
 
-  handleSelect(value, index) {
+  handleSelect = (value, index) => {
     const {
       name,
       dataSource,
@@ -58,6 +78,7 @@ class FormField extends React.Component {
       formSelectionState,
       addChip = addChipDefault,
       history,
+      strings,
     } = this.props;
 
     const selectedElements = formSelectionState[name];
@@ -76,7 +97,7 @@ class FormField extends React.Component {
 
     if (index > -1) {
       // User selected an element
-      input = dataSource[index];
+      input = dataSource.filter(this.bundleFilter)[index];
     } else if (!strict && index === -1) {
       // Direct free input
       input = {
@@ -92,15 +113,33 @@ class FormField extends React.Component {
       return;
     }
 
+    this.setState({ selectedBundle: value.bundle, singleSelection: value.singleSelection });
     this.handleUpdateInput('');
     addChip(name, input, limit, history);
-  }
+  };
 
-  handleUpdateInput(searchText) {
+  handleUpdateInput = (searchText) => {
     this.setState({
       searchText,
       errorText: '', // clear error when user types
     });
+  };
+
+  findFromSource = (element) => {
+    let fromSource = this.props.dataSource.find(data => Number(data.value) === Number(element));
+    fromSource = fromSource || this.props.dataSource.find(data => data.key === element);
+    return fromSource || { text: element, value: element };
+  }
+
+  bundleFilter = field =>
+    !this.state.selectedBundle ||
+    (!this.props.formSelectionState[this.props.name] || this.props.formSelectionState[this.props.name].length < 1) ||
+    field.bundle === this.state.selectedBundle
+
+  handleClick = () => {
+    if (this.state.singleSelection) {
+      this.props.resetField();
+    }
   }
 
   render() {
@@ -122,17 +161,13 @@ class FormField extends React.Component {
 
     const selectedElements = [].concat(formSelectionState[name] || []);
     // Use dataSource on selectedElements to hydrate the chipList
-    const chipList = selectedElements.map((element) => {
-      const fromSource = dataSource.find(data => Number(data.value) === Number(element));
-      return fromSource || { text: element, value: element };
-    });
-
+    const chipList = selectedElements.map(this.findFromSource);
     return (
       <div className={className}>
         <AutoComplete
           ref={(ref) => { this.autocomplete = ref; return null; }}
           openOnFocus
-          dataSource={dataSource}
+          dataSource={dataSource.filter(this.bundleFilter)}
           floatingLabelText={label}
           filter={filter || AutoComplete.fuzzyFilter}
           maxSearchResults={maxSearchResults}
@@ -146,25 +181,15 @@ class FormField extends React.Component {
           underlineFocusStyle={{ borderColor: colorBlue }}
           errorStyle={{ color: colorRed }}
           onClose={() => this.setState({ errorText: '' })}
+          onClick={this.handleClick}
         />
         <ChipList name={name} chipList={chipList} deleteChip={deleteChip} history={history} />
       </div>);
   }
 }
 
-FormField.propTypes = {
-  name: PropTypes.string,
-  dataSource: PropTypes.arrayOf({}),
-  strict: PropTypes.bool,
-  limit: PropTypes.number,
-  formSelectionState: PropTypes.shape({}),
-  addChip: PropTypes.string,
-  history: PropTypes.shape({}),
-  label: PropTypes.string,
-  filter: PropTypes.string,
-  className: PropTypes.string,
-  maxSearchResults: PropTypes.string,
-  deleteChip: PropTypes.string,
-};
+const mapStateToProps = state => ({
+  strings: state.app.strings,
+});
 
-export default FormField;
+export default connect(mapStateToProps)(FormField);

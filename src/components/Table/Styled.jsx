@@ -67,31 +67,91 @@ export const StyledBody = styled.div`
     }
   }
   ${props => (props.hoverRowColumn ? `
-  table {
-    overflow: hidden !important;
+  & tr {
+    :hover {
+      background: rgba(190, 190, 140, 0.07) !important;
+      transition: background 100ms linear !important;
+    }   
+  }
 
-    & tr {
-      :hover {
-        background: rgba(190, 190, 140, 0.07) !important;
-      }   
+  & td.col_highlight, th.col_highlight {
+     background: rgba(190, 190, 190, 0.07) !important;
+     transition: background 100ms linear !important;
+  }
+  ` : '')};
+
+  /* -- scrolling behavior -- */
+  .scrolled.shrink .textContainer {
+    width: 50px !important;
+    margin-right: 0px !important;
+  }
+
+  .scrolled .textContainer span {
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .scrolled .textContainer {
+    & .registered {
+      display: none !important;
     }
 
-    & th,
-    & td {
-      position: relative !important;
+    & .badge {
+      display: none !important;
+    }
 
-      :hover::after {
-        content: "" !important;
-        position: absolute !important;
-        background: rgba(190, 190, 190, 0.07) !important;
-        left: 0 !important;
-        top: -1000px !important;
-        height: 2000px !important;
-        width: 100% !important;
-        pointer-events: none !important;
+    & .rank {
+      display: none !important;
+    }
+  }
+
+  .scrolled .guideContainer {
+    & .moremmr-icon {
+      display: none;
+    }
+  }
+
+  .scrolled .imageContainer {
+    & img {
+      margin-right: 4px;
+      height: 18px;
+    }
+
+    & .playerSlot {
+      display: none;
+    }
+  }
+
+  .scrolled th:first-child, .scrolled td:first-child {
+    position: sticky !important;
+    left: 0px !important;
+  }
+
+  .scrolled th:first-child {
+    background-color: rgba(33, 34, 44, 0.8) !important;
+    z-index: 100;
+    transition: all 0.5s ease-out !important;
+  }
+
+  .scrolled tr {
+    &:nth-child(odd) {
+      & td:first-child {
+        background-color: rgba(33, 34, 44, 0.8) !important;
+        z-index: 100;
+        transition: all 0.5s ease-out !important;
+        padding-right: 0px !important;
       }
     }
-  }` : '')};
+
+    &:nth-child(even) {
+      & td:first-child {
+        background-color: rgba(33, 34, 44, 0.8) !important;
+        z-index: 100;
+        transition: all 0.5s ease-out !important;
+        padding-right: 0px !important;
+      }
+    }
 `;
 export const StyledContainer = styled.div`
   min-width: 100%;

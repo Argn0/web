@@ -2,45 +2,50 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import { debounce } from 'lodash/fp';
+import debounce from 'lodash/fp/debounce';
 import TextField from 'material-ui/TextField';
-import { getSearchResultAndPros, setSearchQuery } from 'actions';
-import strings from 'lang';
 import querystring from 'querystring';
+import { getSearchResultAndPros, setSearchQuery } from '../../actions';
 import constants from '../constants';
 
 class SearchForm extends React.Component {
-  constructor() {
-    super();
-    this.state = {};
-    this.formSubmit = this.formSubmit.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.debouncedSetQuery = this.debouncedSetQuery.bind(this);
+  static propTypes = {
+    dispatchSearch: PropTypes.func,
+    dispatchSetQuery: PropTypes.func,
+    history: PropTypes.shape({
+      push: PropTypes.func,
+    }),
+    strings: PropTypes.shape({}),
+    small: PropTypes.bool,
   }
 
-  componentWillMount() {
+  constructor(props) {
+    super(props);
+
     const params = querystring.parse(window.location.search.substring(1));
     const { pathname } = window.location;
     if (params.q && pathname === '/search') {
       this.props.dispatchSearch(params.q);
-      this.setState({
+      this.state = {
         query: params.q,
-      });
+      };
+    } else {
+      this.state = {};
     }
   }
 
-  formSubmit(e) {
+  debouncedSetQuery = () => {
+    debounce(this.props.dispatchSetQuery, 100);
+  };
+
+  formSubmit = (e) => {
     const { query } = this.state;
     e.preventDefault();
     this.props.history.push(`/search?q=${query}`);
     this.props.dispatchSearch(query);
-  }
+  };
 
-  debouncedSetQuery() {
-    debounce(this.props.dispatchSetQuery, 100);
-  }
-
-  handleChange(e) {
+  handleChange = (e) => {
     const { pathname } = window.location;
     const { value } = e.target;
 
@@ -51,12 +56,14 @@ class SearchForm extends React.Component {
     if (pathname === '/search') {
       this.debouncedSetQuery(value);
     }
-  }
+  };
 
   render() {
+    const { strings, small } = this.props;
     return (
       <form onSubmit={this.formSubmit}>
         <TextField
+          id="searchField"
           hintText={strings.search_title}
           value={this.state.query}
           onChange={this.handleChange}
@@ -67,6 +74,7 @@ class SearchForm extends React.Component {
             left: '-40px',
             width: 'calc(100% + 40px)',
           }}
+          style={{ width: small ? '150%' : '100%', whiteSpace: 'nowrap', overflow: 'hidden' }}
           underlineStyle={{ borderColor: 'transparent' }}
         />
       </form>
@@ -74,28 +82,14 @@ class SearchForm extends React.Component {
   }
 }
 
-SearchForm.propTypes = {
-  dispatchSearch: PropTypes.func,
-  dispatchSetQuery: PropTypes.func,
-  history: PropTypes.shape({
-    push: PropTypes.func,
-  }),
-};
-
-// const mapStateToProps = (state) => {
-//   const { error, loading, done } = state.app.search;
-//   return {
-//     loading,
-//     done,
-//     error,
-//     query,
-//     data: searchResults,
-//   };
-// };
+const mapStateToProps = state => ({
+  strings: state.app.strings,
+  small: state.browser.greaterThan.small,
+});
 
 const mapDispatchToProps = dispatch => ({
   dispatchSearch: query => dispatch(getSearchResultAndPros(query)),
   dispatchSetQuery: query => dispatch(setSearchQuery(query)),
 });
 
-export default withRouter(connect(null, mapDispatchToProps)(SearchForm));
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SearchForm));
