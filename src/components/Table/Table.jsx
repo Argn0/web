@@ -7,12 +7,12 @@ import {
   TableRow as MaterialTableRow,
   TableRowColumn as MaterialTableRowColumn,
 } from 'material-ui/Table';
-import { TablePercent } from 'components/Visualizations';
-import Pagination from 'components/Table/PaginatedTable/Pagination';
-import { abbreviateNumber, SORT_ENUM, defaultSort } from 'utility';
+import { abbreviateNumber, SORT_ENUM, defaultSort } from '../../utility';
+import { TablePercent } from '../Visualizations';
+import Pagination from '../Table/PaginatedTable/Pagination';
 import TableHeader from './TableHeader';
-import Spinner from '../Spinner';
 import Error from '../Error';
+import TableSkeleton from '../Skeletons/TableSkeleton';
 import { StyledBody, StyledContainer } from './Styled';
 
 const getColumnMax = (data, field, getValue) => {
@@ -62,8 +62,33 @@ const initialState = {
   sortFn: f => f,
 };
 
+const {
+  arrayOf,
+  bool,
+  shape,
+  number,
+  string,
+  func,
+} = PropTypes;
+
 class Table extends React.Component {
-  static renderSumRow({ columns, data }) {
+  static propTypes = {
+    data: arrayOf(shape({})).isRequired,
+    columns: arrayOf(shape({})).isRequired,
+    loading: bool,
+    error: bool,
+    summable: bool,
+    maxRows: number,
+    paginated: bool,
+    placeholderMessage: string,
+    pageLength: number,
+    hoverRowColumn: bool,
+    highlightFn: func,
+    keyFn: func,
+    setHighlightedCol: func,
+  }
+
+  static renderSumRow({ columns, data, setHighlightedCol }) {
     return (
       <MaterialTableRow>
         {columns.map((column, colIndex) => {
@@ -74,7 +99,7 @@ class Table extends React.Component {
             }
 
             return (
-              <MaterialTableRowColumn key={`${colIndex}_sum`} style={{ color: column.color }}>
+              <MaterialTableRowColumn key={`${colIndex}_sum`} style={{ color: column.color }} {...(setHighlightedCol && setHighlightedCol(colIndex))}>
                 {column.sumFn && ((column.displaySumFn) ? column.displaySumFn(total) : abbreviateNumber(total))}
               </MaterialTableRowColumn>
             );
@@ -82,46 +107,56 @@ class Table extends React.Component {
       </MaterialTableRow>
     );
   }
-  constructor() {
-    super();
-    this.state = initialState;
-    this.sortClick = this.sortClick.bind(this);
-    this.setCurrentPage = this.setCurrentPage.bind(this);
-    this.nextPage = this.nextPage.bind(this);
-    this.prevPage = this.prevPage.bind(this);
-  }
-  componentWillReceiveProps(newProps) {
-    if (newProps.resetTableState) {
-      this.setState(initialState);
+
+  state = initialState;
+
+  setTableRef = (node) => {
+    if (node) {
+      this.innerContainerRef = node;
+      const { tableDiv } = this.innerContainerRef.refs;
+      // only shrink first column if there is enough wiggle room
+      this.doShrink = (tableDiv.scrollWidth - tableDiv.clientWidth) > 90;
+      tableDiv.onscroll = this.handleScroll;
     }
   }
-  setCurrentPage(pageNumber) {
+
+  setCurrentPage = (pageNumber) => {
     this.setState({
-      ...this.state,
       currentPage: pageNumber,
     });
+  };
+
+  handleScroll = () => {
+    const { scrolled } = this.state;
+    const { scrollLeft } = this.innerContainerRef.refs.tableDiv;
+    if ((!scrolled && scrollLeft) || (scrolled && !scrollLeft)) {
+      this.setState({
+        scrolled: scrollLeft,
+      });
+    }
   }
-  sortClick(sortField, sortState, sortFn) {
+
+  nextPage = () => {
+    this.setState({
+      currentPage: this.state.currentPage + 1,
+    });
+  };
+
+  prevPage = () => {
+    this.setState({
+      currentPage: this.state.currentPage - 1,
+    });
+  };
+
+  sortClick = (sortField, sortState, sortFn) => {
     const { state } = this;
     this.setState({
-      ...state,
       sortState: sortField === state.sortField ? SORT_ENUM.next(SORT_ENUM[state.sortState]) : SORT_ENUM[0],
       sortField,
       sortFn,
     });
-  }
-  nextPage() {
-    this.setState({
-      ...this.state,
-      currentPage: this.state.currentPage + 1,
-    });
-  }
-  prevPage() {
-    this.setState({
-      ...this.state,
-      currentPage: this.state.currentPage - 1,
-    });
-  }
+  };
+
   render() {
     const {
       columns,
@@ -134,9 +169,11 @@ class Table extends React.Component {
       pageLength = 20,
       hoverRowColumn,
       highlightFn,
+      keyFn,
+      setHighlightedCol,
     } = this.props;
     const {
-      sortState, sortField, sortFn, currentPage,
+      sortState, sortField, sortFn, currentPage, scrolled,
     } = this.state;
     const dataLength = this.props.data.length;
     let { data } = this.props;
@@ -160,32 +197,35 @@ class Table extends React.Component {
           place="top"
         />}
         <StyledContainer >
-          {loading && <Spinner />}
+          {loading && <TableSkeleton />}
           {!loading && error && <Error />}
           {!loading && !error && dataLength <= 0 && <div>{placeholderMessage}</div>}
           {!loading && !error && dataLength > 0 && (
-          <div className="innerContainer">
-            <MaterialTable fixedHeader={false} selectable={false}>
+          <div className={`innerContainer ${scrolled && 'scrolled'} ${this.doShrink && 'shrink'}`}>
+            <MaterialTable fixedHeader={false} selectable={false} ref={this.setTableRef}>
               <MaterialTableHeader displaySelectAll={false} adjustForCheckbox={false}>
                 <TableHeader
                   columns={columns}
                   sortState={sortState}
                   sortField={sortField}
                   sortClick={this.sortClick}
+                  setHighlightedCol={setHighlightedCol}
                 />
               </MaterialTableHeader>
               <MaterialTableBody displayRowCheckbox={false} selectable={false}>
                 {data.map((row, index) => (
-                  <MaterialTableRow key={index} style={rowStyle(highlightFn, row)}>
+                  <MaterialTableRow key={(keyFn && keyFn(row)) || index} style={rowStyle(highlightFn, row)}>
                     {columns.map((column, colIndex) => {
                       const {
                         field, color, center, displayFn, relativeBars, percentBars,
-                        percentBarsWithValue, sortFn, invertBarColor, underline,
+                        percentBarsWithValue, invertBarColor, underline, colColor,
                       } = column;
-                      const getValue = typeof sortFn === 'function' ? sortFn : null;
+                      const columnSortFn = column.sortFn;
+                      const getValue = typeof columnSortFn === 'function' ? columnSortFn : null;
                       const value = getValue ? getValue(row) : row[field];
                       const style = {
                         overflow: `${field === 'kills' ? 'visible' : null}`,
+                        backgroundColor: colColor,
                         color,
                         marginBottom: 0,
                         textUnderlinePosition: 'under',
@@ -253,14 +293,14 @@ class Table extends React.Component {
                         style.textDecoration = toUnderline(data, row, field, underline) ? 'underline' : 'none';
                       }
                       return (
-                        <MaterialTableRowColumn key={`${index}_${colIndex}`} style={style}>
+                        <MaterialTableRowColumn key={`${index}_${colIndex}`} style={style} {...(setHighlightedCol && setHighlightedCol(colIndex))}>
                           {fieldEl}
                         </MaterialTableRowColumn>
                       );
                     })}
                   </MaterialTableRow>
                 ))}
-                {summable && Table.renderSumRow({ columns, data })}
+                {summable && Table.renderSumRow({ columns, data, setHighlightedCol })}
               </MaterialTableBody>
             </MaterialTable>
           </div>)}
@@ -279,28 +319,5 @@ class Table extends React.Component {
     );
   }
 }
-
-const {
-  arrayOf,
-  bool,
-  shape,
-  number,
-  string,
-  func,
-} = PropTypes;
-
-Table.propTypes = {
-  data: arrayOf(shape({})).isRequired,
-  columns: arrayOf(shape({})).isRequired,
-  loading: bool,
-  error: bool,
-  summable: bool,
-  maxRows: number,
-  paginated: bool,
-  placeholderMessage: string,
-  pageLength: number,
-  hoverRowColumn: bool,
-  highlightFn: func,
-};
 
 export default Table;
