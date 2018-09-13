@@ -1,16 +1,27 @@
 /* eslint-disable react/jsx-filename-extension */
+import 'core-js/fn/object/entries';
 import 'core-js/fn/object/values';
+import 'core-js/fn/array/includes';
+import 'core-js/fn/array/find';
+import 'core-js/fn/array/find-index';
+import 'core-js/fn/array/fill';
+import 'core-js/fn/array/from';
+import 'core-js/fn/number/is-nan';
+import 'core-js/fn/number/is-integer';
+import 'core-js/fn/number/is-finite';
+import 'core-js/fn/string/includes';
+import 'core-js/fn/string/starts-with';
 import React from 'react';
 import createHistory from 'history/createBrowserHistory';
 import ReactGA from 'react-ga';
 import { hydrate, render } from 'react-dom';
 import { Provider } from 'react-redux';
 import { Route, Router } from 'react-router-dom';
-import store from 'store';
-import { getMetadata } from 'actions';
-import App from 'components/App';
-import constants from 'components/constants';
 import { injectGlobal } from 'styled-components';
+import store from './store';
+import { getMetadata, getStrings, getAbilities, getHeroAbilities, getNeutralAbilities, getAbilityIds } from './actions';
+import App from './components/App';
+import constants from './components/constants';
 // import registerServiceWorker from './registerServiceWorker';
 import { unregister } from './registerServiceWorker';
 
@@ -52,7 +63,7 @@ li {
   color: ${constants.primaryTextColor};
 }
 
-[data-tip="true"] {
+[data-tip] {
   cursor: help;
 }
 
@@ -157,6 +168,12 @@ li {
 
 // Fetch metadata (used on all pages)
 store.dispatch(getMetadata());
+// Fetch strings
+store.dispatch(getStrings());
+store.dispatch(getAbilities());
+store.dispatch(getHeroAbilities());
+store.dispatch(getNeutralAbilities());
+store.dispatch(getAbilityIds());
 
 ReactGA.initialize('UA-55757642-1');
 ReactGA.pageview(window.location.pathname + window.location.search);
