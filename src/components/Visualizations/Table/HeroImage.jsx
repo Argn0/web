@@ -1,18 +1,29 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import ReactTooltip from 'react-tooltip';
 import ActionDoneAll from 'material-ui/svg-icons/action/done-all';
-import strings from 'lang';
-import { TableLink } from 'components/Table';
 import playerColors from 'dotaconstants/build/player_colors.json';
-import { IconDice, IconCrystalBall, IconCheckCircle } from 'components/Icons';
 import SocialPerson from 'material-ui/svg-icons/social/person';
 import NotificationSync from 'material-ui/svg-icons/notification/sync';
 import styled from 'styled-components';
-import { subTextStyle } from 'utility';
+import { subTextStyle, IMAGESIZE_ENUM } from '../../../utility';
+import { TableLink } from '../../Table';
+import { IconDice, IconCrystalBall, IconCheckCircle } from '../../Icons';
 import constants from '../../constants';
+import AttrStrength from '../../Icons/AttrStrength';
+import AttrIntelligent from '../../Icons/AttrIntelligent';
+import AttrAgility from '../../Icons/AttrAgility';
+import HeroImage from '../HeroImage';
+
 
 const Styled = styled.div`
+
+.hero-tooltip .__react_component_tooltip {
+  opacity: 1 !important;
+  padding: 0px !important;
+}
+
 .subTextContainer {
   position: relative;
 
@@ -200,11 +211,11 @@ const Styled = styled.div`
   margin-left: 8px;
 }
 
-.pvgnaGuideContainer {
+.guideContainer {
   margin: auto;
 }
 
-.pvgnaGuideIcon {
+.guideIcon {
   max-width: 24px;
   max-height: 24px;
 }
@@ -217,6 +228,189 @@ const HeroImageContainer = styled.div`
   align-items: center;
 `;
 
+const HeroToolTip = styled.div`
+  width: 290px;
+  overflow: hidden;
+  background-color: #131519;
+  background: linear-gradient(135deg, rgba(19,21,25,1) 0%, rgba(48,62,90,1) 12%, rgba(19,21,25,1) 70%);
+  overflow: hidden;
+  border: 2px solid #27292b;
+
+  .header {
+    height: 120px;
+    overflow: hidden;
+  }
+
+  .heroImg {
+    position: relative;
+    float: left;
+
+    &::after {
+      content: "";
+      position:absolute;
+      height: 100px;
+      width: 86px;
+      left: 10px;
+      top: 10px;
+      background: linear-gradient(to bottom, transparent 70%, rgba(0,0,0,1) 100%);
+      }
+
+    & .health-mana {
+      position: absolute;
+      left: 10px;
+      top: 98px;
+      line-height: 12px;
+      width: 86px;
+      text-align: center;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.6);
+
+      & #health {
+        color: ${constants.colorGreen};
+
+        &::after {
+          content: "/";
+          color: ${constants.colorMuted};
+        }
+
+        &::before {
+          content: "HP";
+          color: #488249;
+        }
+      }
+      
+      & #mana {
+        color: ${constants.colorMana};
+
+        &::before {
+          content: "MP";
+          color: #3C638E;
+        }
+      }
+    }
+
+    & #heroImg-attribute {
+      height: 15px;
+      position: absolute;
+      z-index: 2;
+      left: 4px;
+      top: 5px;
+      background: rgba(0, 0, 0, 0.65);
+      border-radius: 50%;
+    }
+
+    & img {
+      width: 86px;
+      margin-left: 10px;
+      margin-top: 10px;
+      border-radius: 3px;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.35);
+      border-right: 2px solid rgba(0, 0, 0, 0.35);
+      display: inline-block;
+    }
+  }
+
+  .header-stats {
+    height: 100px;
+    width: 180px;
+    margin-left: 8px;
+    margin-bottom: 1px;
+    display: inline-block;
+    
+    & #hero-name {
+      color: ${constants.primaryTextColor};
+      text-shadow: 1px 1px ${constants.colorMuted};
+      margin-left: 7px;
+      font-size: ${constants.fontSizeCommon};
+      margin-top: 6px;
+      letter-spacing: 1px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    & #hero-roles {
+      font-size: ${constants.fontSizeTiny}
+      color: #829091;
+      margin-left: 7px;
+      line-height: 10px;
+      position: relative;
+      top: -2px;
+      height: 18px;
+      letter-spacing: 1px;
+    }
+
+    & .attributes-container {
+      height: 50px;
+      width: 180px;
+      display: flex;
+      margin-top: 10px;
+      justify-content: space-between;
+      position: relative;
+
+      & .attributes {
+      width: 50px;
+      height: 50px;
+      z-index: 100;
+
+      & .attribute-img {
+        display: block;
+        height: 35px;
+        margin-left: auto;
+        margin-right: auto;
+        border: 2px solid ${constants.colorMuted};
+        border-radius: 50%;
+        box-sizing: border-box;
+        background: #111111;
+
+        &[main="true"] {
+          border: 2px solid ${constants.primaryTextColor};
+        }
+      }
+
+      & .attribute-text {
+        text-align: center;
+        font-size: 12px;
+        margin-top: 2px;
+      }
+    }
+    }
+  }
+
+  .stats {
+    margin-bottom: 9px;
+
+    & div {
+      margin-left: 9px;
+    }
+
+    & span:last-child {
+      font-size: larger;
+      margin-right: 11px;
+    }
+    
+    & .stat {
+      display: flex;
+      align-items: baseline;
+
+      & .dots {
+      border-bottom: 1px dashed rgba(114, 114, 114, 0.23);
+      flex: 1;
+      margin-right: 8px;
+      margin-left: 8px;
+      padding-bottom: 10px;
+      }
+    }
+  } 
+`;
+
+const Trim = styled.hr`
+  border: 0;
+  height: 1px;
+  margin-left: 10px;
+  margin-right: 10px;
+  background-color: ${constants.colorMuted};
+`;
 
 const expand = {
   display: 'flex',
@@ -238,12 +432,16 @@ const TableHeroImage = ({
   confirmed,
   party,
   heroName,
-  showPvgnaGuide,
-  pvgnaGuideInfo,
+  heroID,
+  showGuide,
+  guideUrl,
+  guideType,
   randomed,
   repicked,
   predictedVictory,
   leaverStatus,
+  strings,
+  hero = {},
 }) => (
   <Styled style={expand}>
     <HeroImageContainer>
@@ -260,13 +458,18 @@ const TableHeroImage = ({
         {party}
       </div>
       }
-      {image &&
+      {(heroID || image) &&
       <div className="imageContainer">
-        <img
-          src={image}
-          alt=""
-          className="image"
-        />
+        {image ?
+          <img
+            src={image}
+            alt=""
+            className="image"
+            data-tip={hero.id === undefined && null}
+            data-for={heroName}
+          /> :
+          <HeroImage id={heroID} className="image" data-tip={hero.id === undefined && null} data-for={heroName !== undefined && heroName} />
+        }
         {leaverStatus !== undefined && leaverStatus > 1 &&
         <span
           className="abandoned"
@@ -288,7 +491,7 @@ const TableHeroImage = ({
       </div>
       }
       {!hideText &&
-      <div className="textContainer" style={{ marginLeft: !image && 59 }}>
+      <div className="textContainer">
         <span>
           {registered &&
             <div
@@ -348,27 +551,87 @@ const TableHeroImage = ({
         }
       </div>
       }
-      { !!showPvgnaGuide && pvgnaGuideInfo && heroName &&
-      <div className="pvgnaGuideContainer" data-tip data-for={heroName}>
-        <a href={pvgnaGuideInfo.url}>
-          <img className="pvgnaGuideIcon" src="/assets/images/pvgna-guide-icon.png" alt={`Learn ${heroName} on Pvgna`} />
+      { Boolean(showGuide) && guideType && guideUrl && heroName &&
+      <div className="guideContainer" data-tip data-for={heroName}>
+        <a href={guideUrl}>
+          { guideType === 'PVGNA' ? <img className="guideIcon" src="/assets/images/pvgna-guide-icon.png" alt={`Learn ${heroName} on Pvgna`} /> : <div /> }
+          { guideType === 'MOREMMR' ? <img className="moremmr-icon" style={{ maxWidth: '60px' }} src="/assets/images/moremmr-icon2.svg" alt={`Learn ${heroName} on MoreMMR`} /> : <div /> }
         </a>
         <ReactTooltip id={heroName} place="top" type="light" effect="solid" offset="{'top': 1, 'right': 3}">
-          {`Learn ${heroName} on Pvgna`}
+          { guideType === 'PVGNA' ? `Learn ${heroName} on Pvgna` : '' }
+          { guideType === 'MOREMMR' ? `Learn ${heroName} on MoreMMR` : '' }
         </ReactTooltip>
       </div>
       }
+      <div className="hero-tooltip">
+        <ReactTooltip id={heroName} effect="solid" place="right">
+          <HeroToolTip>
+            <div className="header">
+              <div className="heroImg">
+                <HeroImage id={heroID} imageSizeSuffix={IMAGESIZE_ENUM.VERT.suffix} />
+                {hero.primary_attr === 'str' && <AttrStrength id="heroImg-attribute" />}
+                {hero.primary_attr === 'agi' && <AttrAgility id="heroImg-attribute" />}
+                {hero.primary_attr === 'int' && <AttrIntelligent id="heroImg-attribute" />}
+                <div className="health-mana">
+                  <span id="health">{Math.floor(hero.base_health)}</span><span id="mana">{Math.floor(hero.base_mana)}</span>
+                </div>
+              </div>
+              <div className="header-stats">
+                <div id="hero-name">{hero.localized_name}</div>
+                <div id="hero-roles">{hero.attack_type} - {hero.roles && hero.roles.join(', ')}</div>
+                <div className="attributes-container">
+                  <div className="attributes">
+                    <AttrStrength id="str" className="attribute-img" main={`${hero.primary_attr === 'str'}`} />
+                    <div className="attribute-text">{hero.base_str} +{hero.str_gain}</div>
+                  </div>
+                  <div className="attributes">
+                    <AttrAgility id="agi" className="attribute-img" main={`${hero.primary_attr === 'agi'}`} />
+                    <div className="attribute-text">{hero.base_agi} +{hero.agi_gain}</div>
+                  </div>
+                  <div className="attributes">
+                    <AttrIntelligent id="int" className="attribute-img" main={`${hero.primary_attr === 'int'}`} />
+                    <div className="attribute-text">{hero.base_int} +{hero.int_gain}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <Trim />
+            <div className="stats">
+              <div className="stat">
+                <span>{`${strings.heading_move_speed}:`}</span>
+                <span className="dots" />
+                <span>{hero.move_speed}</span>
+              </div>
+              <div className="stat">
+                <span>{`${strings.heading_attack}:`}</span>
+                <span className="dots" />
+                <span>{`${hero.base_attack_min}-${hero.base_attack_max}`}</span>
+              </div>
+              <div className="stat">
+                <span>{`${strings.heading_base_armor}:`}</span>
+                <span className="dots" />
+                <span>{hero.base_armor}</span>
+              </div>
+              <div className="stat">
+                <span>{`${strings.heading_attack_range}:`}</span>
+                <span className="dots" />
+                <span>{hero.attack_range}</span>
+              </div>
+            </div>
+          </HeroToolTip>
+        </ReactTooltip>
+      </div>
     </HeroImageContainer>
   </Styled>
 );
 
 const {
-  string, oneOfType, bool, node, shape, object,
+  string, oneOfType, bool, node, object,
 } = PropTypes;
 
 TableHeroImage.propTypes = {
   parsed: PropTypes.number,
-  image: string,
+  image: PropTypes.string,
   title: oneOfType([
     string,
     object,
@@ -384,19 +647,23 @@ TableHeroImage.propTypes = {
   party: node,
   confirmed: bool,
   heroName: string,
-  showPvgnaGuide: oneOfType([
+  showGuide: oneOfType([
     bool,
     PropTypes.number,
   ]),
-  pvgnaGuideInfo: shape({ url: string }),
+  guideUrl: string,
+  guideType: string,
   randomed: bool,
   repicked: string,
   predictedVictory: bool,
   leaverStatus: PropTypes.number,
+  strings: PropTypes.shape({}),
+  hero: PropTypes.shape({}),
+  heroID: PropTypes.number,
 };
 
 // If need party or estimated, just add new prop with default val = solo and change icons depending what needs
-export const Mmr = ({ number }) => (
+export const Mmr = ({ number, strings }) => (
   <span>
     <section
       data-hint={strings.th_solo_mmr}
@@ -407,12 +674,14 @@ export const Mmr = ({ number }) => (
     {number || strings.general_unknown}
   </span>
 );
+
 Mmr.propTypes = {
   number: PropTypes.number,
+  strings: PropTypes.shape({}),
 };
 
-export const CompetitiveRank = ({ rankTier }) => (
-  <span>
+export const CompetitiveRank = ({ rankTier, strings }) => (
+  <span className="rank">
     <section
       data-hint={strings.th_rank}
       data-hint-position="bottom"
@@ -422,8 +691,14 @@ export const CompetitiveRank = ({ rankTier }) => (
     {rankTier}
   </span>
 );
+
 CompetitiveRank.propTypes = {
   rankTier: PropTypes.number,
+  strings: PropTypes.shape({}),
 };
 
-export default TableHeroImage;
+const mapStateToProps = state => ({
+  strings: state.app.strings,
+});
+
+export default connect(mapStateToProps)(TableHeroImage);

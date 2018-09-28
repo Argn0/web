@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import DotaMap from 'components/DotaMap';
 import uuid from 'uuid';
 import h337 from 'heatmap.js';
+import DotaMap from '../DotaMap';
 
 /**
  * Adjust each x/y coordinate by the provided scale factor.
@@ -11,13 +11,16 @@ import h337 from 'heatmap.js';
  * Returns the adjusted heatmap data.
  */
 function scaleAndExtrema(points, scalef, max, shift) {
+  // the max values should not deviate from the average by more than a factor of 25
+  const maxValue = (points.reduce((a, b) => a + b.value, 0) / points.length) * 25;
+
   const newPoints = points.map(p => ({
     x: Math.floor(p.x * scalef),
     y: Math.floor(p.y * scalef),
-    value: p.value + (shift || 0),
+    value: Math.min(p.value, maxValue) + shift,
   }));
-  const vals = points.map(p => p.value);
-  const localMax = Math.max.apply(null, vals);
+  const vals = points.map(p => Math.min(p.value, maxValue));
+  const localMax = Math.max(...vals);
   return {
     min: 0,
     max: max || localMax,
@@ -36,9 +39,10 @@ const drawHeatmap = ({
 };
 
 class Heatmap extends Component {
-  componentWillMount() {
-    this.id = `a-${uuid.v4()}`;
+  static propTypes = {
+    width: PropTypes.number,
   }
+
   componentDidMount() {
     this.heatmap = h337.create({
       container: document.getElementById(this.id),
@@ -46,9 +50,11 @@ class Heatmap extends Component {
     });
     drawHeatmap(this.props, this.heatmap);
   }
-  componentWillUpdate(nextProps) {
-    drawHeatmap(nextProps, this.heatmap);
+  componentDidUpdate() {
+    drawHeatmap(this.props, this.heatmap);
   }
+
+  id = `a-${uuid.v4()}`;
 
   render() {
     return (
@@ -63,10 +69,6 @@ class Heatmap extends Component {
       </div>);
   }
 }
-
-Heatmap.propTypes = {
-  width: PropTypes.number,
-};
 
 Heatmap.defaultProps = {
   width: 600,
