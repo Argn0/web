@@ -11,19 +11,9 @@ import {
 
 
 const paths = [
-  '/matches/4080856812/benchmarks',
-  '/matches/4080856812/draft',
-  '/matches/4080856812/performances',
-  '/matches/4080856812/combat',
-  '/matches/4080856812/farm',
-  '/matches/4080856812/items',
-  '/matches/4080856812/graphs',
-  '/matches/4080856812/objectives',
-  '/matches/4080856812/actions',
-  '/matches/4080856812/analysis',
-  '/matches/4080856812/cosmetics',
-  '/matches/4080856812/fantasy',
-  '/matches/4080856812/story',
+  '/matches/4080856812/overview',
+  '/matches/4080856812/vision',
+  
 ];
 
 fixture`matches/ paths`
