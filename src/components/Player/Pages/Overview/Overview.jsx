@@ -1,26 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import strings from 'lang';
+import Checkbox from 'material-ui/Checkbox';
+import Turbo from 'material-ui/svg-icons/image/timelapse';
+import TurboOff from 'material-ui/svg-icons/notification/do-not-disturb';
+import styled from 'styled-components';
 import {
   getPlayerRecentMatches,
   getPlayerHeroes,
   getPlayerPeers,
-  getPvgnaHeroGuides,
-} from 'actions';
-import Checkbox from 'material-ui/Checkbox';
-import Turbo from 'material-ui/svg-icons/image/timelapse';
-import TurboOff from 'material-ui/svg-icons/notification/do-not-disturb';
-import ReactTooltip from 'react-tooltip';
-import Table from 'components/Table';
-import Container from 'components/Container';
-import playerMatchesColumns from 'components/Player/Pages/Matches/playerMatchesColumns';
-import { playerHeroesOverviewColumns } from 'components/Player/Pages/Heroes/playerHeroesColumns';
-import { playerPeersOverviewColumns } from 'components/Player/Pages/Peers/playerPeersColumns';
-import util from 'util';
-import styled from 'styled-components';
+  getPlayerCounts,
+} from '../../../../actions';
+import Table from '../../../Table';
+import Container from '../../../Container';
+import playerMatchesColumns from '../Matches/playerMatchesColumns';
+import { playerHeroesOverviewColumns } from '../Heroes/playerHeroesColumns';
+import { playerPeersOverviewColumns } from '../Peers/playerPeersColumns';
 import SummOfRecMatches from './Summary';
 import constants from '../../../constants';
+import CountsSummary from './CountsSummary';
+import { formatTemplateToString } from '../../../../utility';
 
 export const MAX_MATCHES_ROWS = 20;
 const MAX_HEROES_ROWS = 10;
@@ -35,8 +34,11 @@ const SummaryContainer = styled(Container)`
   width: 100%;
 
   & ul {
+    border: 1px solid rgb(52, 50, 50);
+    background-color: rgb(46, 47, 64);
     margin: 0;
-    padding: 0;
+    padding-left: 5px;
+    border-radius: 5px;
 
     & li {
       list-style: none;
@@ -113,20 +115,26 @@ const Overview = ({
   playerId,
   toggleTurboGames,
   showTurboGames,
+  strings,
+  countsData,
+  countsLoading,
+  countsError,
 }) => (
   <OverviewContainer>
     <SummaryContainer
       title={strings.heading_avg_and_max}
       titleTo={`/players/${playerId}/records`}
-      subtitle={util.format(strings.subheading_avg_and_max, numValidRecentMatches)}
+      subtitle={formatTemplateToString(strings.subheading_avg_and_max, numValidRecentMatches)}
       loading={matchesLoading}
       error={matchesError}
+      loaderWidth={250}
+      loaderHeight={30}
     >
       <Styled
-        data-tip={strings.exclude_turbo_matches}
+        data-hint={strings.exclude_turbo_matches}
+        data-hint-position="top"
         style={{ display: validRecentMatches.some(match => match.game_mode === 23) ? 'inline' : 'none' }}
       >
-        <ReactTooltip />
         <Checkbox
           style={{ display: validRecentMatches.filter(match => showTurboGames || match.game_mode !== 23) }}
           defaultChecked
@@ -137,15 +145,28 @@ const Overview = ({
       </Styled>
       <SummOfRecMatches matchesData={validRecentMatches.filter(match => showTurboGames || match.game_mode !== 23)} />
     </SummaryContainer>
+    <SummaryContainer
+      title={strings.tab_counts}
+      loading={countsLoading}
+      error={countsError}
+      subtitle={strings.th_win}
+      loaderWidth={250}
+      loaderHeight={30}
+      style={{ width: '100%' }}
+    >
+      <CountsSummary data={countsData} />
+    </SummaryContainer>
     <MatchesContainer>
       <Container
         title={strings.heading_matches}
         titleTo={`/players/${playerId}/matches`}
         loading={matchesLoading}
         error={matchesError}
+        loaderWidth={300}
+        loaderHeight={160}
       >
         <Table
-          columns={playerMatchesColumns}
+          columns={playerMatchesColumns(strings)}
           data={matchesData}
           maxRows={MAX_MATCHES_ROWS}
         />
@@ -160,7 +181,7 @@ const Overview = ({
         error={peersError}
       >
         <Table
-          columns={playerPeersOverviewColumns(playerId)}
+          columns={playerPeersOverviewColumns(playerId, strings)}
           data={peersData}
           maxRows={MAX_PEERS_ROWS}
         />
@@ -173,7 +194,7 @@ const Overview = ({
         error={heroesError}
       >
         <Table
-          columns={playerHeroesOverviewColumns(playerId)}
+          columns={playerHeroesOverviewColumns(playerId, strings)}
           data={heroesData}
           maxRows={MAX_HEROES_ROWS}
         />
@@ -197,6 +218,10 @@ Overview.propTypes = {
   playerId: PropTypes.string,
   toggleTurboGames: PropTypes.func,
   showTurboGames: PropTypes.bool,
+  strings: PropTypes.shape({}),
+  countsData: PropTypes.arrayOf({}),
+  countsLoading: PropTypes.bool,
+  countsError: PropTypes.bool,
 };
 
 
@@ -204,10 +229,20 @@ const getData = (props) => {
   props.getPlayerRecentMatches(props.playerId);
   props.getPlayerHeroes(props.playerId, props.location.search);
   props.getPlayerPeers(props.playerId, props.location.search);
-  props.getPvgnaHeroGuides();
+  props.getPlayerCounts(props.playerId, props.location.search);
 };
 
 class RequestLayer extends React.Component {
+  static propTypes = {
+    location: PropTypes.shape({
+      key: PropTypes.string,
+    }),
+    playerId: PropTypes.string,
+    toggleTurboGames: PropTypes.func,
+    showTurboGames: PropTypes.bool,
+    strings: PropTypes.shape({}),
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -221,9 +256,9 @@ class RequestLayer extends React.Component {
     getData(this.props);
   }
 
-  componentWillUpdate(nextProps) {
-    if (this.props.playerId !== nextProps.playerId || this.props.location.key !== nextProps.location.key) {
-      getData(nextProps);
+  componentDidUpdate(prevProps) {
+    if (this.props.playerId !== prevProps.playerId || this.props.location.key !== prevProps.location.key) {
+      getData(this.props);
     }
   }
 
@@ -236,20 +271,6 @@ class RequestLayer extends React.Component {
     return <Overview {...this.props} toggleTurboGames={this.toggleTurboGames} showTurboGames={this.state.showTurboGames} />;
   }
 }
-
-RequestLayer.propTypes = {
-  location: PropTypes.shape({
-    key: PropTypes.string,
-  }),
-  playerId: PropTypes.string,
-  toggleTurboGames: PropTypes.func,
-  showTurboGames: PropTypes.bool,
-};
-
-const mergeHeroGuides = (heroes, heroGuides) => heroes.map(hero => ({
-  ...hero,
-  pvgnaGuide: heroGuides[hero.hero_id],
-}));
 
 /**
  * Get the number of recent matches, filtering out Siltbreaker matches
@@ -265,25 +286,80 @@ const countValidRecentMatches = matches => matches.filter(match => match.game_mo
 const getValidRecentMatches = matches => matches.filter(match => match.game_mode !== 19)
   .slice(0, MAX_MATCHES_ROWS);
 
+const filterCounts = (counts) => {
+  const countMap = {
+    is_radiant: [],
+    game_mode: [],
+    patch: [],
+    region: [],
+    lane_role: [],
+  };
+
+  const limitCount = (key, field, lim) =>
+    counts[key].list.filter(el => el.category !== 'Unknown')
+      .sort((a, b) => (
+        b[field] - a[field]
+      )).slice(0, lim);
+
+  Object.keys(counts).forEach((key) => {
+    switch (key) {
+      case 'is_radiant':
+        countMap[key] = counts[key].list;
+        break;
+
+      case 'game_mode':
+        countMap[key] = limitCount(key, 'matches', 2);
+        break;
+
+      case 'patch':
+        countMap[key] = limitCount(key, 'category', 2);
+        break;
+
+      case 'region':
+        countMap[key] = limitCount(key, 'matches', 2);
+        break;
+
+      case 'lane_role':
+        countMap[key] = limitCount(key, 'matches', 2);
+        break;
+
+      default:
+        break;
+    }
+  });
+
+  return [
+    ...countMap.is_radiant,
+    ...countMap.game_mode,
+    ...countMap.region,
+    ...countMap.lane_role,
+    ...countMap.patch,
+  ];
+};
+
 const mapStateToProps = state => ({
   matchesData: state.app.playerRecentMatches.data,
   matchesLoading: state.app.playerRecentMatches.loading,
   matchesError: state.app.playerRecentMatches.error,
   validRecentMatches: getValidRecentMatches(state.app.playerRecentMatches.data),
   numValidRecentMatches: countValidRecentMatches(state.app.playerRecentMatches.data),
-  heroesData: mergeHeroGuides(state.app.playerHeroes.data, state.app.pvgnaGuides.data),
+  heroesData: state.app.playerHeroes.data,
   heroesLoading: state.app.playerHeroes.loading,
   heroesError: state.app.playerHeroes.error,
   peersData: state.app.playerPeers.data,
   peersLoading: state.app.playerPeers.loading,
   peersError: state.app.playerPeers.error,
+  strings: state.app.strings,
+  countsData: filterCounts(state.app.playerCounts.data),
+  countsLoading: state.app.playerCounts.loading,
+  countsError: state.app.playerCounts.error,
 });
 
 const mapDispatchToProps = dispatch => ({
   getPlayerRecentMatches: (playerId, options) => dispatch(getPlayerRecentMatches(playerId, options)),
   getPlayerHeroes: (playerId, options) => dispatch(getPlayerHeroes(playerId, options)),
   getPlayerPeers: (playerId, options) => dispatch(getPlayerPeers(playerId, options)),
-  getPvgnaHeroGuides: () => dispatch(getPvgnaHeroGuides()),
+  getPlayerCounts: (playerId, options) => dispatch(getPlayerCounts(playerId, options)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RequestLayer);

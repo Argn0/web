@@ -1,6 +1,5 @@
 # web
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/odota/web.svg)](https://greenkeeper.io/)
 [![Help Contribute to Open Source](https://www.codetriage.com/odota/web/badges/users.svg)](https://www.codetriage.com/odota/web)
 
 OpenDota Web UI: A web interface for viewing Dota 2 data. This utilizes the [OpenDota API](https://docs.opendota.com), which is also an [open source project](https://github.com/odota/core).
@@ -13,6 +12,7 @@ Quickstart
 * Visit port 3000 on your development machine.
 * Make some changes
 * `npm run lint` to check your code for linting errors
+* `npm test` to check all app routes for uncaught JavaScript errors
 * Submit a pull request. Wait for review and merge.
 * Congratulations! You're a contributor.
 

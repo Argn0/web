@@ -1,9 +1,10 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import strings from 'lang';
-import heroes from 'dotaconstants/build/heroes.json';
 import styled from 'styled-components';
 import constants from '../../constants';
+import { IMAGESIZE_ENUM } from '../../../utility';
+import HeroImage from './../../Visualizations/HeroImage';
 
 const Styled = styled.div`
 .PicksBans {
@@ -65,17 +66,12 @@ const Styled = styled.div`
 }
 `;
 
-const PicksBans = ({ data }) => (
+const PicksBans = ({ data, strings }) => (
   <Styled>
     <div className="PicksBans">
       {data.map(pb => (
         <section key={pb.order}>
-          <img
-            src={heroes[pb.hero_id] && process.env.REACT_APP_API_HOST + heroes[pb.hero_id].img}
-            alt=""
-            className="image"
-            data-isPick={pb.is_pick}
-          />
+          <HeroImage id={pb.hero_id} imageSizeSuffix={IMAGESIZE_ENUM.SMALL.suffix} data-isPick={pb.is_pick} />
           {!pb.is_pick && <div className="ban" />}
           <aside>
             {pb.is_pick ? strings.match_pick : strings.match_ban} <b>{pb.order + 1}</b>
@@ -88,6 +84,11 @@ const PicksBans = ({ data }) => (
 
 PicksBans.propTypes = {
   data: PropTypes.arrayOf({}),
+  strings: PropTypes.shape({}),
 };
 
-export default PicksBans;
+const mapStateToProps = state => ({
+  strings: state.app.strings,
+});
+
+export default connect(mapStateToProps)(PicksBans);
