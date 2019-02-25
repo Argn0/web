@@ -7,17 +7,19 @@ export const StyledContainer = styled.div`
   height: 100%;
 `;
 
-export const KDAContainer = StyledContainer.extend`
-  width: calc(300% + 50px);
+export const KDAContainer = styled(StyledContainer)`
+  width: calc(300% + 10px);
   left: -10px;
+  pointer-events: none;
 `;
 
 export const TitleContainer = styled.div`
   align-self: center;
-  line-height: 0;
+  white-space: nowrap;
 
   & small {
     color: ${constants.colorMutedLight};
+    margin-left: 1px;
   }
 `;
 
@@ -27,15 +29,16 @@ export const PercentContainer = styled.div`
   position: absolute;
   background-color: ${constants.colorMuted};
   align-self: flex-end;
-  bottom: -1px;
+  bottom: -10px;
   left: 0;
+  pointer-events: auto !important;
 
   & > div {
     height: 100%;
   }
 `;
 
-export const KDAPercentContainer = PercentContainer.extend`
+export const KDAPercentContainer = styled(PercentContainer)`
   display: flex;
 
   &[data-hint-position="top"] {

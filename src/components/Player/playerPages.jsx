@@ -1,5 +1,4 @@
 import React from 'react';
-import strings from 'lang';
 import {
   PeersPage,
   OverviewPage,
@@ -16,9 +15,10 @@ import {
   WardmapPage,
   WordcloudPage,
   TotalsPage,
+  ActivityPage,
 } from './Pages';
 
-const playerPages = [{
+const playerPages = strings => [{
   name: strings.tab_overview,
   key: 'overview',
   content: (playerId, routeParams, location) => (<OverviewPage playerId={playerId} routeParams={routeParams} location={location} />),
@@ -84,9 +84,13 @@ const playerPages = [{
   name: strings.tab_rankings,
   key: 'rankings',
   content: (playerId, routeParams, location) => (<RankingsPage playerId={playerId} routeParams={routeParams} location={location} />),
+}, {
+  name: strings.tab_activity,
+  key: 'activity',
+  content: (playerId, routeParams, location) => (<ActivityPage playerId={playerId} routeParams={routeParams} location={location} />),
 }];
 
-export default playerId => playerPages.map(page => ({
+export default (playerId, strings) => playerPages(strings).map(page => ({
   ...page,
   route: `/players/${playerId}/${page.key}`,
 }));

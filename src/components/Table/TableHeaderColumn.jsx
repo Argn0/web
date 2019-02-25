@@ -1,26 +1,36 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ReactTooltip from 'react-tooltip';
-import uuid from 'uuid';
-import { TableHeaderColumn as MaterialTableHeaderColumn } from 'material-ui/Table';
+import nanoid from 'nanoid';
 import { getSortIcon } from './tableHelpers';
 import { StyledHeaderCell } from './Styled';
+import { getColStyle } from '../../utility';
 
 const TableHeaderColumn = ({
-  column, sortClick, sortField, sortState,
+  column, sortClick, sortField, sortState, index, setHighlightedCol,
 }) => {
-  const tooltipId = uuid.v4();
+  const tooltipId = nanoid();
   const style = {
     justifyContent: column.center ? 'center' : null,
   };
-
   return (
-    <MaterialTableHeaderColumn style={{ width: column.key === 'heroTd' ? '1px' : null }}>
+    <th
+      style={{
+        backgroundColor: column.colColor,
+        ...getColStyle(column),
+      }}
+      {...(setHighlightedCol && setHighlightedCol(index))}
+      className={column.className}
+    >
       <StyledHeaderCell
         onClick={() => column.sortFn && sortClick(column.field, sortState, column.sortFn)}
         style={style}
       >
-        <div data-tip={column.tooltip && true} data-for={tooltipId} style={{ color: column.color }}>
+        <div
+          data-tip={column.tooltip && true}
+          data-for={tooltipId}
+          style={{ color: column.color, width: '100%', textAlign: getColStyle(column).textAlign }}
+        >
           {column.displayName}
           {column.sortFn && getSortIcon(sortState, sortField, column.field, { height: 14, width: 14 })}
           {column.tooltip &&
@@ -30,7 +40,7 @@ const TableHeaderColumn = ({
           }
         </div>
       </StyledHeaderCell>
-    </MaterialTableHeaderColumn>
+    </th>
   );
 };
 
@@ -39,6 +49,8 @@ TableHeaderColumn.propTypes = {
   sortClick: PropTypes.func,
   sortField: PropTypes.string,
   sortState: PropTypes.string,
+  setHighlightedCol: PropTypes.func,
+  index: PropTypes.number,
 };
 
 export default TableHeaderColumn;

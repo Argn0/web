@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import wordcloud from 'wordcloud';
-import uuid from 'uuid';
+import nanoid from 'nanoid';
 
 const stopWords = 'a,am,an,and,are,as,at,be,by,for,from,how,i,im,in,is,it,not,of,on,or,that,the,this,to,was,what,when,where,who,will,with';
 
@@ -60,16 +60,22 @@ function updateWordCloud(wordCounts, cloudDomId) {
   });
 }
 
+const { string } = PropTypes;
+
 class Wordcloud extends React.Component {
-  componentWillMount() {
-    this.id = `a-${uuid.v4()}`;
+  static propTypes = {
+    counts: string,
   }
+
   componentDidMount() {
     updateWordCloud(this.props.counts, this.id);
   }
   componentDidUpdate(nextProps) {
     updateWordCloud(nextProps.counts, this.id);
   }
+
+  id = `a-${nanoid()}`;
+
   render() {
     const width = Math.min(1080, window.innerWidth * 0.75);
     const height = width * 0.7;
@@ -85,10 +91,6 @@ class Wordcloud extends React.Component {
 }
 Wordcloud.defaultProps = {
   counts: {},
-};
-const { string } = PropTypes;
-Wordcloud.propTypes = {
-  counts: string,
 };
 
 export default connect()(Wordcloud);

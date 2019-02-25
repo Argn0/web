@@ -1,5 +1,6 @@
 import React from 'react';
-import strings from 'lang';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import AppLogo from '../App/AppLogo';
 import PageLinks from './PageLinks';
@@ -25,6 +26,7 @@ const StyledFooter = styled.footer`
 
     & .links,
     & .cheese {
+      margin-top: 12px;
       width: 50%;
     }
 
@@ -148,24 +150,13 @@ const StyledHr = styled.hr`
   background: linear-gradient(to right, ${constants.primaryTextColor}, rgba(0, 0, 0, 0));
 `;
 
-export default () => (
+const Footer = ({ strings }) => (
   <StyledFooter>
-    {
-      /*
-      location.pathname !== '/' &&
-      <section style={{ height: '250px' }}>
-        <iframe
-          style={{ border: 'none', margin: 0, width: '100%', height: 250 }}
-          src="https://www.stanza.co/@dota2?embed=true&banner=true&site=opendota"
-        />
-      </section>
-      */
-    }
     <main>
       <div className="links">
         <div className="logoNsocial">
           <AppLogo />
-          <SocialLinks />
+          <SocialLinks strings={strings} />
           <div className="mobile">
             <a
               href="https://play.google.com/store/apps/details?id=com.opendota.mobile&hl=en"
@@ -198,3 +189,13 @@ export default () => (
     </main>
   </StyledFooter>
 );
+
+Footer.propTypes = {
+  strings: PropTypes.shape({}),
+};
+
+const mapStateToProps = state => ({
+  strings: state.app.strings,
+});
+
+export default connect(mapStateToProps)(Footer);

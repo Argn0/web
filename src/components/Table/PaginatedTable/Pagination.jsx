@@ -4,7 +4,6 @@ import styled from 'styled-components';
 import FlatButton from 'material-ui/FlatButton';
 import Next from 'material-ui/svg-icons/hardware/keyboard-arrow-right';
 import Prev from 'material-ui/svg-icons/hardware/keyboard-arrow-left';
-import strings from 'lang';
 import constants from '../../constants';
 
 const StyledContainer = styled.div`
@@ -32,7 +31,7 @@ const StyledPagination = styled.div`
   }
   ${props => props.top && `position: absolute;
   right: 0;
-  top: -46px;
+  top: -32px;
   font-size: ${constants.fontSizeMedium};
   @media only screen and (max-width: 767px) {
     position: initial;
@@ -119,6 +118,7 @@ const Pagination = ({
   pageLength,
   length,
   place,
+  strings,
 }) =>
   numPages > 1 && (
     <StyledContainer top={place === 'top'}>
@@ -167,6 +167,10 @@ const Pagination = ({
     </StyledContainer>
   );
 
+const mapStateToProps = state => ({
+  strings: state.app.strings,
+});
+
 const mapDispatchToProps = () => ({
   /*
   nextPage: () => dispatch(nextPage(id)),
@@ -175,4 +179,4 @@ const mapDispatchToProps = () => ({
   */
 });
 
-export default connect(null, mapDispatchToProps)(Pagination);
+export default connect(mapStateToProps, mapDispatchToProps)(Pagination);

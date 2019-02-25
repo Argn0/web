@@ -1,28 +1,31 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import strings from 'lang';
-import heroes from 'dotaconstants/build/heroes.json';
 import styled from 'styled-components';
 import constants from '../../constants';
+import { IMAGESIZE_ENUM } from '../../../utility';
+import HeroImage from './../../Visualizations/HeroImage';
 
 const Styled = styled.div`
+bottom: 15px;
+margin-top: -20px;
+
 .PicksBans {
   display: flex;
   flex-direction: row;
   justify-content: center;
   flex-wrap: wrap;
-  margin: 0 24px;
 
   & > section {
     position: relative;
-    margin: 5px;
+    margin: 5px 5px 9px 5px;
 
     & > aside {
       font-size: 11px;
       text-transform: uppercase;
       text-align: center;
       margin-top: -5px;
-      background-color: black;
+      background-color: rgba(0, 0, 0, 0.5);
       line-height: 1.6;
     }
   }
@@ -32,7 +35,7 @@ const Styled = styled.div`
   }
 }
 
-.image {
+img {
   position: relative;
   height: 29px;
   box-shadow: 0 0 5px ${constants.defaultPrimaryColor};
@@ -65,17 +68,12 @@ const Styled = styled.div`
 }
 `;
 
-const PicksBans = ({ data }) => (
-  <Styled>
+const PicksBans = ({ data, strings, style }) => (
+  <Styled style={style}>
     <div className="PicksBans">
       {data.map(pb => (
         <section key={pb.order}>
-          <img
-            src={heroes[pb.hero_id] && process.env.REACT_APP_API_HOST + heroes[pb.hero_id].img}
-            alt=""
-            className="image"
-            data-isPick={pb.is_pick}
-          />
+          <HeroImage id={pb.hero_id} imageSizeSuffix={IMAGESIZE_ENUM.SMALL.suffix} data-isPick={pb.is_pick} />
           {!pb.is_pick && <div className="ban" />}
           <aside>
             {pb.is_pick ? strings.match_pick : strings.match_ban} <b>{pb.order + 1}</b>
@@ -88,6 +86,12 @@ const PicksBans = ({ data }) => (
 
 PicksBans.propTypes = {
   data: PropTypes.arrayOf({}),
+  strings: PropTypes.shape({}),
+  style: PropTypes.shape({}),
 };
 
-export default PicksBans;
+const mapStateToProps = state => ({
+  strings: state.app.strings,
+});
+
+export default connect(mapStateToProps)(PicksBans);

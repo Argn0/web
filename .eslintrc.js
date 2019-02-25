@@ -35,6 +35,7 @@ module.exports = {
           'src/stories/**'
         ]
       }
-    ]
-  }
+    ],
+    "react/sort-comp": [2],
+  },
 };

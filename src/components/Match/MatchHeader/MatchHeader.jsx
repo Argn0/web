@@ -1,16 +1,15 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { transformations, isRadiant, sum } from 'utility';
-import strings from 'lang';
-import Spinner from 'components/Spinner';
-import { IconRadiant, IconDire } from 'components/Icons';
 import { Link } from 'react-router-dom';
 import FlatButton from 'material-ui/FlatButton';
+import styled from 'styled-components';
 import NavigationRefresh from 'material-ui/svg-icons/navigation/refresh';
 import ActionFingerprint from 'material-ui/svg-icons/action/fingerprint';
 import FileFileDownload from 'material-ui/svg-icons/file/file-download';
-import Warning from 'components/Alerts';
-import styled from 'styled-components';
+import { transformations, isRadiant, sum } from '../../../utility';
+import { IconRadiant, IconDire } from '../../Icons';
+import Warning from '../../Alerts';
 import constants from '../../constants';
 
 const Styled = styled.header`
@@ -31,11 +30,27 @@ const Styled = styled.header`
   }
   padding: 20px 0 10px;
   font-size: 28px;
-  filter: drop-shadow(0 0 20px ${constants.colorYelor});
 
   @media only screen and (max-width: 1023px) {
     text-align: center;
     margin: 10px 0;
+  }
+
+  & > span {
+    padding-bottom: 5px;
+    letter-spacing: 1px;
+  }
+
+  &.radiant > span {
+    background: linear-gradient(to right,rgba(167, 195, 42, 0) 0%, 
+      rgba(129, 146, 60, 0) 5%,rgba(19,82,44,0.3) 50%,
+      rgba(96, 236, 8, 0.05) 87%, rgba(255,255,255,0) 100%);
+  }
+
+  &.dire > span {
+    background: linear-gradient(to right,rgba(117,132,52,0) 0%, 
+    rgba(129,146,60,0) 5%,rgba(111,34,26,0.3) 50%,
+    rgba(255, 71, 0, 0.05) 87%, rgba(255,255,255,0) 100%);
   }
 
   & svg {
@@ -223,95 +238,97 @@ const getWinnerStyle = (radiantWin) => {
   return radiantWin ? 'radiant' : 'dire';
 };
 
-const MatchHeader = ({ match, user, loading }) => {
-  if (!loading) {
-    const mapPlayers = (key, radiant) =>
-      player =>
-        ((radiant === undefined || radiant === isRadiant(player.player_slot)) ? Number(player[key]) : null);
+const MatchHeader = ({ match, user, strings }) => {
+  if (!match) {
+    return null;
+  }
+  const mapPlayers = (key, radiant) =>
+    player =>
+      ((radiant === undefined || radiant === isRadiant(player.player_slot)) ? Number(player[key]) : null);
 
-    const victorySection = match.radiant_win
-      ? (
-        <span>
-          <IconRadiant />
-          {match.radiant_team && match.radiant_team.name
+  const victorySection = match.radiant_win
+    ? (
+      <span>
+        <IconRadiant />
+        {match.radiant_team && match.radiant_team.name
           ? `${match.radiant_team.name} ${strings.match_team_win}`
           : strings.match_radiant_win
         }
-        </span>)
-      : (
-        <span>
-          <IconDire />
-          {match.dire_team && match.dire_team.name
+      </span>)
+    : (
+      <span>
+        <IconDire />
+        {match.dire_team && match.dire_team.name
           ? `${match.dire_team.name} ${strings.match_team_win}`
           : strings.match_dire_win
         }
-        </span>);
-    return (
-      <Styled>
-        <div className="matchInfo">
-          <div className={`team ${getWinnerStyle(match.radiant_win)}`}>
-            {match.radiant_win === null || match.radiant_win === undefined ? strings.td_no_result : victorySection}
-          </div>
-          <div className="mainInfo">
-            <div className="killsRadiant">
-              {
+      </span>);
+  return (
+    <Styled>
+      <div className="matchInfo">
+        <div className={`team ${getWinnerStyle(match.radiant_win)}`}>
+          {match.radiant_win === null || match.radiant_win === undefined ? strings.td_no_result : victorySection}
+        </div>
+        <div className="mainInfo">
+          <div className="killsRadiant">
+            {
                 match.radiant_score || match.players
                   .map(mapPlayers('kills', true))
                   .reduce(sum, 0)
               }
-            </div>
-            <div className="gmde">
-              <span className="gameMode">
-                {transformations.game_mode(null, null, match.game_mode)}
-              </span>
-              <span className="duration">
-                {transformations.duration(null, null, match.duration)}
-              </span>
-              <span className="ended">
-                {strings.match_ended} {transformations.start_time(null, null, match.start_time + match.duration)}
-              </span>
-            </div>
-            <div className="killsDire">
-              {
+          </div>
+          <div className="gmde">
+            <span className="gameMode">
+              {strings[`game_mode_${match.game_mode}`]}
+            </span>
+            <span className="duration">
+              {transformations.duration(null, null, match.duration)}
+            </span>
+            <span className="ended">
+              {strings.match_ended} {transformations.start_time(null, null, match.start_time + match.duration)}
+            </span>
+          </div>
+          <div className="killsDire">
+            {
                 match.dire_score || match.players
                   .map(mapPlayers('kills', false))
                   .reduce(sum, 0)
               }
-            </div>
           </div>
-          <div className="additionalInfo">
-            <ul>
-              {match.league &&
+        </div>
+        <div className="additionalInfo">
+          <ul>
+            {match.league &&
               <li>
                 <span>league</span>
                 {match.league.name}
               </li>}
-              <li>
-                <span>{strings.match_id}</span>
-                {match.match_id}
-              </li>
-              <li>
-                <span>{strings.match_region}</span>
-                {strings[`region_${match.region}`]}
-              </li>
-              <li>
-                <span>{strings.th_skill}</span>
-                {(match.skill) ? strings[`skill_${match.skill}`] : strings.general_unknown}
-              </li>
-            </ul>
-          </div>
+            <li>
+              <span>{strings.match_id}</span>
+              {match.match_id}
+            </li>
+            <li>
+              <span>{strings.match_region}</span>
+              {strings[`region_${match.region}`]}
+            </li>
+            <li>
+              <span>{strings.th_skill}</span>
+              {(match.skill) ? strings[`skill_${match.skill}`] : strings.general_unknown}
+            </li>
+          </ul>
         </div>
-        {!match.version &&
+      </div>
+      {!match.version &&
         <Warning className="unparsed">
           {strings.tooltip_unparsed}
         </Warning>}
-        <div className="matchButtons">
-          <FlatButton
-            label={match.version ? strings.match_button_reparse : strings.match_button_parse}
-            icon={match.version ? <NavigationRefresh /> : <ActionFingerprint />}
-            containerElement={<Link to={`/request#${match.match_id}`}>r</Link>}
-          />
-          {match.replay_url &&
+      <div className="matchButtons">
+        <FlatButton
+          label={match.version ? strings.match_button_reparse : strings.match_button_parse}
+          icon={match.version ? <NavigationRefresh /> : <ActionFingerprint />}
+          containerElement={<Link to={`/request#${match.match_id}`}>r</Link>}
+        />
+        {match.replay_url &&
           <FlatButton
             label={strings.match_button_replay}
             icon={<FileFileDownload />}
@@ -319,32 +336,33 @@ const MatchHeader = ({ match, user, loading }) => {
             target="_blank"
             rel="noopener noreferrer"
           />}
-          <FlatButton
-            label={strings.app_dotacoach}
-            icon={<img src="/assets/images/dotacoach-32x24.png" alt="" />}
-            href={`//dotacoach.org/Hire/OpenDota?matchID=${match.match_id}&userSteamId=${user && user.account_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          />
-          <FlatButton
-            label={strings.app_pvgna}
-            icon={<img src="/assets/images/pvgna-guide-icon.png" alt={strings.app_pvgna_alt} height="24px" />}
-            href={`https://pvgna.com/?userSteamId=${user && user.account_id}&ref=yasp`}
-            target="_blank"
-            rel="noopener noreferrer"
-          />
-        </div>
-      </Styled>
-    );
-  }
-
-  return <Spinner />;
+        <FlatButton
+          label={strings.app_dotacoach}
+          icon={<img src="/assets/images/dotacoach-32x24.png" alt="" />}
+          href={`//dotacoach.org/Hire/OpenDota?matchID=${match.match_id}&userSteamId=${user && user.account_id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        />
+        <FlatButton
+          label={strings.app_rivalry}
+          icon={<img src="/assets/images/rivalry-icon.png" alt="" height="24px" />}
+          href="https://www.rivalry.gg/opendota"
+          target="_blank"
+          rel="noopener noreferrer"
+        />
+      </div>
+    </Styled>
+  );
 };
 
 MatchHeader.propTypes = {
   match: PropTypes.shape({}),
   user: PropTypes.shape({}),
-  loading: PropTypes.bool,
+  strings: PropTypes.shape({}),
 };
 
-export default MatchHeader;
+const mapStateToProps = state => ({
+  strings: state.app.strings,
+});
+
+export default connect(mapStateToProps)(MatchHeader);

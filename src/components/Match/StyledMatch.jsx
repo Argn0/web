@@ -16,11 +16,6 @@ export const StyledAbilityUpgrades = styled.div`
       margin-right: 0;
     }
 
-    & img {
-      height: 30px;
-      width: 30px;
-    }
-
     & > div {
       background-color: ${constants.darkPrimaryColor};
       height: 30px;
@@ -142,7 +137,6 @@ export const StyledDivClearBoth = styled.div`
 `;
 export const StyledBackpack = styled.div`
   display: flex;
-  align-items: center;
 
   & > div {
     position: relative;
@@ -159,8 +153,10 @@ export const StyledBackpack = styled.div`
   }
 
   & svg {
-    width: 21px;
-    height: 20px;
+    position: relative;
+    top: 2px;
+    width: 17px;
+    height: 16px;
     fill: ${constants.colorMutedLight};
     margin: 0 10px;
   }
@@ -275,9 +271,9 @@ export const StyledLogFilterForm = styled.div`
 `;
 
 export const StyledDmgTargetInflictor = styled.div`
-  .inflictorWithValue {  
+  .inflictorWithValue {
     object {
-    max-width: 27px !important;  
+    max-width: 27px !important;
     }
   }
 `;
@@ -318,7 +314,7 @@ export const StyledDmgTargetRow = styled.div`
     #totalValue {
       display: none !important;
     }
-    
+
     .inflictorWithValue {
       & .overlay {
         background-color: black;

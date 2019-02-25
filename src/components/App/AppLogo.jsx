@@ -1,7 +1,7 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import strings from 'lang';
 import styled from 'styled-components';
 import constants from '../constants';
 
@@ -16,16 +16,21 @@ const StyledLink = styled(Link)`
   }
 `;
 
-const AppLogo = ({ size }) => (
+const AppLogo = ({ size, strings }) => (
   <StyledLink to="/">
-    <big style={{ fontSize: size }}>
+    <span style={{ fontSize: size }}>
       {`<${strings.app_name}/>`}
-    </big>
+    </span>
   </StyledLink>
 );
 
 AppLogo.propTypes = {
   size: PropTypes.string,
+  strings: PropTypes.shape({}),
 };
 
-export default AppLogo;
+const mapStateToProps = state => ({
+  strings: state.app.strings,
+});
+
+export default connect(mapStateToProps)(AppLogo);
