@@ -375,19 +375,38 @@ export default (strings) => {
     return cols;
   };
 
+
+  const getAbility = (lvl, abilities, heroID) => {
+    const lvlMap = {
+      18: 16,
+      20: 17,
+      25: 18,
+    };
+    if (heroID === 74) {
+      return abilities[lvl - 1];
+    }
+    const index = lvlMap[lvl] || lvl - 1;
+    const skipTheseLevels = Object.keys(lvlMap).map(key => lvlMap[key]);
+
+    return (
+      (skipTheseLevels.indexOf(index) === -1 || lvlMap[lvl]) && abilities[index]
+    );
+  };
+
   const abilityColumns = () => {
     const cols = Array.from(new Array(26), (_, index) => ({
       displayName: `${index}`,
       tooltip: 'Ability upgraded at this level',
       field: `ability_upgrades_arr_${index}`,
       displayFn: (row) => {
-        if (!row[`ability_upgrades_arr_${index}`]) {
+        const ability = getAbility(index, row.ability_upgrades_arr, row.hero_id);
+        if (ability === undefined) {
           return null;
         }
         return (
           <StyledAbilityUpgrades data-tip data-for={`au_${row.player_slot}`} >
             <div className="ability">
-              {inflictorWithValue(null, null, null, null, row[`ability_upgrades_arr_${index}`]) || <div className="placeholder" />}
+              {inflictorWithValue(null, null, null, null, ability) || <div className="placeholder" />}
             </div>
           </StyledAbilityUpgrades>);
       },
